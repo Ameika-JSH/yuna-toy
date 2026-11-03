@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>유아용 신호등 놀이</title>
+    <style>
+        :root {
+            --red-on: #ff3b30;
+            --red-off: #2a0b0a;
+            --green-on: #34c759;
+            --green-off: #0a2a14;
+        }
+        body {
+            margin: 0; padding: 0; background-color: #1a1a1a;
+            font-family: 'Malgun Gothic', sans-serif;
+            display: flex; flex-direction: column; align-items: center;
+            height: 100vh; overflow: hidden; user-select: none;
+            position: relative;
+        }
+        .timer-display {
+            position: absolute; top: 15px; left: 15px;
+            color: #fff; font-size: 20px; font-weight: bold; background: #000;
+            padding: 4px 12px; border-radius: 8px; min-width: 30px; text-align: center;
+            z-index: 10; border: 1px solid #444;
+        }
+        .traffic-light-container {
+            width: 100vw; max-width: 450px; background-color: #222; padding: 15px 0;
+            display: flex; flex-direction: column; align-items: center; gap: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); border-bottom: 5px solid #111;
+        }
+        .light-box {
+            width: 130px; height: 130px; background-color: #111; border-radius: 50%;
+            border: 6px solid #444; display: flex; justify-content: center; align-items: center;
+            cursor: pointer; transition: background-color 0.15s, box-shadow 0.15s; -webkit-tap-highlight-color: transparent;
+        }
+        .walk-svg { width: 80px; height: 80px; fill: #111111; }
+        
+        .light-box.red-light { background-color: var(--red-off); }
+        .light-box.red-light.active { background-color: var(--red-on); box-shadow: 0 0 35px var(--red-on); }
+        
+        .light-box.green-light { background-color: var(--green-off); }
+        .light-box.green-light.active { background-color: var(--green-on); box-shadow: 0 0 35px var(--green-on); }
+        
+        @keyframes blink { 
+            0%, 49% { background-color: var(--green-on); box-shadow: 0 0 35px var(--green-on); } 
+            50%, 100% { background-color: var(--green-off); box-shadow: none; } 
+        }
+        .light-box.green-light.blinking { animation: blink 0.5s infinite; }
+
+        .control-panel { width: 92vw; max-width: 400px; background: #2a2a2a; margin-top: 10px; padding: 12px; border-radius: 12px; color: white; box-sizing: border-box; }
+        .mode-select { display: flex; justify-content: space-around; margin-bottom: 10px; }
+        .mode-btn { flex: 1; margin: 0 4px; padding: 8px; background: #444; border: none; color: white; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
+        .mode-btn.active { background: #007aff; }
+        .time-settings { display: flex; flex-direction: column; gap: 6px; font-size: 13px; }
+        .time-input-group { display: flex; justify-content: space-between; align-items: center; }
+        .time-input-group input { width: 55px; padding: 4px; border-radius: 4px; border: 1px solid #666; background: #444; color: white; text-align: center; }
+
+        .road-container {
+            flex: 1; width: 100%; background-color: #444; position: relative;
+            display: flex; flex-direction: column; justify-content: space-around;
+            padding: 10px 0; margin-top: auto; overflow: hidden; border-top: 4px solid #fff;
+        }
+        .lane { width: 100%; height: 2px; border-top: 2px dashed #fff; opacity: 0.4; position: absolute; }
+        .lane-1 { top: 33.3%; }
+        .lane-2 { top: 66.6%; }
+
+        /* 가로로 넓어지고 세로로 슬림해진 리얼 횡단보도 */
+        .crosswalk {
+            position: absolute; left: 50%; top: 0; bottom: 0; width: 110px;
+            transform: translateX(-50%); display: flex; flex-direction: column;
+            justify-content: space-between; pointer-events: none; z-index: 1;
+        }
+        .crosswalk-stripe { width: 100%; height: 8%; background-color: #fff; box-shadow: 0 0 2px rgba(0,0,0,0.2); }
+
+        .car { width: 75px; height: 45px; position: absolute; left: -150px; font-size: 38px; display: flex; justify-content: center; align-items: center; transform: scaleX(-1); z-index: 3; }
+        
+        .pedestrian {
+            position: absolute; left: 50%; top: -45px; transform: translateX(-50%);
+            font-size: 35px; z-index: 4; display: none; pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="timerDisplay" class="timer-display">5</div>
+
+    <div class="traffic-light-container">
+        <div id="redLight" class="light-box red-light active" onclick="handleLightClick('RED')">
+            <svg class="walk-svg" viewBox="0 0 24 24"><path d="M12,2A2,2 0 0,1 14,4A2,2 0 0,1 12,6A2,2 0 0,1 10,4A2,2 0 0,1 12,2M10.5,22V16H8V11H16V16H13.5V22H10.5Z" /></svg>
+        </div>
+        <div id="greenLight" class="light-box green-light" onclick="handleLightClick('GREEN')">
+            <svg class="walk-svg" viewBox="0 0 24 24"><path d="M13.5,5.5A1.5,1.5 0 0,1 15,7A1.5,1.5 0 0,1 13.5,8.5A1.5,1.5 0 0,1 12,7A1.5,1.5 0 0,1 12,5.5M9.8,22L11,17.3L13,19V22H15V17.5L13.2,15.8L13.8,12.7C14.7,13.8 16,14.5 17.5,14.5V12.5C16.2,12.5 15.2,11.7 14.7,10.7L13.8,9.2C13.5,8.7 12.9,8.4 12.3,8.4C12,8.4 11.7,8.5 11.4,8.6L7,10.5V14.5H9V11.8L10.6,11.2L9.1,18.3L5.4,17.5L5,19.5L9.8,22Z" /></svg>
+        </div>
+    </div>
+
+    <div class="control-panel">
+        <div class="mode-select">
+            <button id="btnAuto" class="mode-btn active" onclick="setMode('AUTO')">자동 모드</button>
+            <button id="btnManual" class="mode-btn" onclick="setMode('MANUAL')">수동 모드</button>
+        </div>
+        <div class="time-settings">
+            <div class="time-input-group"><label>🔴 빨간불 유지 (초):</label><input type="number" id="inputRedTime" value="5" min="2" onchange="updateSettings()"></div>
+            <div class="time-input-group"><label>🟢 초록불 유지 (초):</label><input type="number" id="inputGreenTime" value="8" min="5" onchange="updateSettings()"></div>
+        </div>
+    </div>
+
+    <div class="road-container" id="road">
+        <div class="lane lane-1"></div>
+        <div class="lane lane-2"></div>
+        
+        <div class="crosswalk">
+            <div class="crosswalk-stripe"></div>
+            <div class="crosswalk-stripe"></div>
+            <div class="crosswalk-stripe"></div>
+            <div class="crosswalk-stripe"></div>
+            <div class="crosswalk-stripe"></div>
+        </div>
+
+        <div id="car0" class="car">🚗</div>
+        <div id="car1" class="car">🚌</div>
+        <div id="car2" class="car">🚕</div>
+
+        <div id="pedestrian" class="pedestrian">🚶</div>
+    </div>
+
+    <script>
+        let currentLight = 'RED', currentMode = 'AUTO', timeLeft = 5, mainTimer = null, globalAnimation = null;
+        let settings = { redTime: 5, greenTime: 8, blinkStart: 3 };
+        let audioCtx = null;
+
+        let cars = [
+            { id: 'car0', x: -150, targetSpeed: 3.5, currentSpeed: 3.5, lane: 0, width: 75, baseType: '🚗' },
+            { id: 'car1', x: -350, targetSpeed: 2.2, currentSpeed: 2.2, lane: 1, width: 75, baseType: '🚌' },
+            { id: 'car2', x: -250, targetSpeed: 4.5, currentSpeed: 4.5, lane: 2, width: 75, baseType: '🚕' }
+        ];
+
+        let ped = { y: -45, speed: 1.0, active: false };
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)({ latencyHint: 'interactive' });
+            }
+            if (audioCtx.state === 'suspended') { audioCtx.resume(); }
+        }
+
+        function playDongDang() {
+            try {
+                initAudio();
+                const now = audioCtx.currentTime;
+                let osc1 = audioCtx.createOscillator(), gain1 = audioCtx.createGain();
+                osc1.type = 'sine'; osc1.frequency.setValueAtTime(987.77, now);
+                gain1.gain.setValueAtTime(0.15, now); gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
+                osc1.connect(gain1); gain1.connect(audioCtx.destination);
+                osc1.start(now); osc1.stop(now + 0.4);
+
+                let osc2 = audioCtx.createOscillator(), gain2 = audioCtx.createGain();
+                osc2.type = 'sine'; osc2.frequency.setValueAtTime(783.99, now + 0.4);
+                gain2.gain.setValueAtTime(0.15, now + 0.4); gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+                osc2.connect(gain2); gain2.connect(audioCtx.destination);
+                osc2.start(now + 0.4); osc2.stop(now + 0.8);
+            } catch(e) { console.log(e); }
+        }
+
+        window.onload = function() {
+            document.body.addEventListener('click', initAudio, { once: true });
+            document.body.addEventListener('touchstart', initAudio, { once: true });
+            updateSettings(); resetTimer(); startLoop(); initTrafficSystem();
+        };
+
+        function updateSettings() {
+            settings.redTime = parseInt(document.getElementById('inputRedTime').value) || 5;
+            settings.greenTime = parseInt(document.getElementById('inputGreenTime').value) || 8;
+            if(currentLight === 'RED' && timeLeft > settings.redTime) timeLeft = settings.redTime;
+            if(currentLight === 'GREEN' && timeLeft > settings.greenTime) timeLeft = settings.greenTime;
+            document.getElementById('timerDisplay').innerText = (currentMode === 'MANUAL') ? "-" : timeLeft;
+        }
+
+        function setMode(mode) {
+            currentMode = mode;
+            document.getElementById('btnAuto').classList.toggle('active', mode === 'AUTO');
+            document.getElementById('btnManual').classList.toggle('active', mode === 'MANUAL');
+            if(mode === 'MANUAL') {
+                document.getElementById('timerDisplay').innerText = "-";
+                clearInterval(mainTimer);
+                document.getElementById('greenLight').classList.remove('blinking');
+            } else {
+                resetTimer(); startLoop();
+            }
+        }
+
+        function resetTimer() {
+            timeLeft = (currentLight === 'RED') ? settings.redTime : settings.greenTime;
+            document.getElementById('timerDisplay').innerText = timeLeft;
+        }
+
+        function startLoop() {
+            clearInterval(mainTimer);
+            mainTimer = setInterval(() => {
+                if (currentMode === 'MANUAL') return;
+                timeLeft--;
+                document.getElementById('timerDisplay').innerText = timeLeft;
+                const greenLightDiv = document.getElementById('greenLight');
+                
+                if (currentLight === 'GREEN' && timeLeft <= settings.blinkStart) {
+                    greenLightDiv.classList.add('blinking');
+                } else {
+                    greenLightDiv.classList.remove('blinking');
+                }
+                if (timeLeft <= 0) { switchLight(); }
+            }, 1000);
+        }
+
+        function handleLightClick(clickedLight) {
+            initAudio();
+            if (currentMode === 'MANUAL') {
+                if (currentLight !== clickedLight) { currentLight = clickedLight; renderLightUI(); }
+            } else {
+                switchLight();
+            }
+        }
+
+        function switchLight() {
+            currentLight = (currentLight === 'RED') ? 'GREEN' : 'RED';
+            renderLightUI();
+            if (currentMode === 'AUTO') { resetTimer(); }
+        }
+
+        function renderLightUI() {
+            const redLightDiv = document.getElementById('redLight');
+            const greenLightDiv = document.getElementById('greenLight');
+            const pedDiv = document.getElementById('pedestrian');
+            greenLightDiv.classList.remove('blinking');
+
+            if (currentLight === 'RED') {
+                redLightDiv.classList.add('active');
+                greenLightDiv.classList.remove('active');
+                ped.active = false;
+                pedDiv.style.display = 'none';
+            } else {
+                redLightDiv.classList.remove('active');
+                greenLightDiv.classList.add('active');
+                playDongDang();
+                
+                const road = document.getElementById('road');
+                ped.y = -40;
+                ped.speed = (road.clientHeight + 60) / (settings.greenTime * 60); 
+                ped.active = true;
+                pedDiv.style.top = ped.y + 'px';
+                pedDiv.style.display = 'block';
+            }
+        }
+
+        function initTrafficSystem() {
+            const road = document.getElementById('road');
+            const pedDiv = document.getElementById('pedestrian');
+            const carEmojis = ['🚗', '🚑', '🚌', '🚒', '🚕', '🚚', '🚓', '🚛'];
+            const lanePositions = [15, 65, 115]; 
+
+            function frameRender() {
+                const roadWidth = road.clientWidth;
+                const roadHeight = road.clientHeight;
+                
+                const stopLine = (roadWidth / 2) - 95; 
+
+                for (let i = 0; i < cars.length; i++) {
+                    let c = cars[i];
+                    let carElement = document.getElementById(c.id);
+
+                    if (currentLight === 'GREEN') {
+                        c.currentSpeed = 0;
+                    } else if (currentMode === 'AUTO' && currentLight === 'RED' && timeLeft <= 2) {
+                        if (c.x < stopLine && (c.x + c.targetSpeed) >= stopLine) {
+                            c.x = stopLine;
+                            c.currentSpeed = 0;
+                        } else if (c.x === stopLine) {
+                            c.currentSpeed = 0;
+                        } else {
+                            c.currentSpeed = c.targetSpeed;
+                        }
+                    } else {
+                        let speedLimit = c.targetSpeed;
+                        for (let j = 0; j < cars.length; j++) {
+                            if (i !== j && cars[j].lane === c.lane) {
+                                let frontCar = cars[j];
+                                if (frontCar.x > c.x && (frontCar.x - c.x) < 120) {
+                                    speedLimit = Math.min(speedLimit, frontCar.currentSpeed);
+                                }
+                            }
+                        }
+                        c.currentSpeed = speedLimit;
+                    }
+
+                    c.x += c.currentSpeed;
+
+                    if (c.x > roadWidth + 30) {
+                        c.x = -150 - (Math.random() * 100); 
+                        c.targetSpeed = 2.2 + Math.random() * 3.2;
+                        c.lane = Math.floor(Math.random() * 3);
+                        c.baseType = carEmojis[Math.floor(Math.random() * carEmojis.length)];
+                        carElement.innerText = c.baseType;
+                    }
+
+                    carElement.style.left = c.x + 'px';
+                    carElement.style.top = lanePositions[c.lane] + 'px';
+                }
+
+                if (ped.active) {
+                    ped.y += ped.speed;
+                    pedDiv.style.top = ped.y + 'px';
+                    if (ped.y > roadHeight + 20) {
+                        ped.active = false;
+                        pedDiv.style.display = 'none';
+                    }
+                }
+
+                globalAnimation = requestAnimationFrame(frameRender);
+            }
+
+            if(globalAnimation) cancelAnimationFrame(globalAnimation);
+            frameRender();
+        }
+    </script>
+</body>
+</html>

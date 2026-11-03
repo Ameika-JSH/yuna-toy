@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>유아용 신호등 놀이</title>
+    <style>
+        :root {
+            --red-on: #ff3b30;
+            --red-off: #2a0806;
+            --green-on: #34c759;
+            --green-off: #061c0c;
+        }
+        body {
+            margin: 0; padding: 0; background-color: #1a1a1a;
+            font-family: 'Malgun Gothic', sans-serif;
+            display: flex; flex-direction: column; align-items: center;
+            height: 100vh; overflow: hidden; user-select: none;
+        }
+        .traffic-light-container {
+            width: 100vw; max-width: 450px; background-color: #333; padding: 20px 0;
+            display: flex; flex-direction: column; align-items: center; gap: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.5); border-bottom: 5px solid #222;
+        }
+        .light-box {
+            width: 160px; height: 160px; background-color: #222; border-radius: 50%;
+            border: 5px solid #444; display: flex; justify-content: center; align-items: center;
+            cursor: pointer; transition: background-color 0.2s, box-shadow 0.2s; -webkit-tap-highlight-color: transparent;
+        }
+        .walk-svg { 
+            width: 90px; height: 90px; 
+            fill: #111111; /* 기본적으로 아주 어두운 검은색 */
+            transition: filter 0.2s; 
+        }
+        .light-box.red-light { background-color: var(--red-off); }
+        .light-box.red-light.active { background-color: var(--red-on); box-shadow: 0 0 30px var(--red-on); }
+        .light-box.red-light.active .walk-svg { filter: drop-shadow(0 0 2px rgba(0,0,0,0.8)); }
+        
+        .light-box.green-light { background-color: var(--green-off); }
+        .light-box.green-light.active { background-color: var(--green-on); box-shadow: 0 0 30px var(--green-on); }
+        .light-box.green-light.active .walk-svg { filter: drop-shadow(0 0 2px rgba(0,0,0,0.8)); }
+        
+        @keyframes blink { 0%, 49% { background-color: var(--green-on); } 50%, 100% { background-color: var(--green-off); } }
+        .light-box.green-light.blinking { animation: blink 0.5s infinite; }
+        
+        .timer-display { color: #fff; font-size: 24px; font-weight: bold; background: #000; padding: 5px 15px; border-radius: 10px; min-width: 40px; text-align: center; }
+        .control-panel { width: 90vw; max-width: 400px; background: #2a2a2a; margin-top: 15px; padding: 15px; border-radius: 15px; color: white; box-sizing: border-box; }
+        .mode-select { display: flex; justify-content: space-around; margin-bottom: 15px; }
+        .mode-btn { flex: 1; margin: 0 5px; padding: 10px; background: #444; border: none; color: white; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        .mode-btn.active { background: #007aff; }
+        .time-settings { display: flex; flex-direction: column; gap: 8px; font-size: 14px; }
+        .time-input-group { display: flex; justify-content: space-between; align-items: center; }
+        .time-input-group input { width: 60px; padding: 5px; border-radius: 5px; border: 1px solid #666; background: #444; color: white; text-align: center; }
+        .road-container { flex: 1; width: 100%; background-color: #555; position: relative; display: flex; align-items: center; border-top: 4px dashed #fff; border-bottom: 4px dashed #fff; margin-top: auto; overflow: hidden; }
+        .car { 
+            width: 90px; height: 50px; position: absolute; left: -150px; font-size: 40px; 
+            display: flex; justify-content: center; align-items: center; 
+            transform: scaleX(-1); /* 차 진행방향을 오른쪽으로 뒤집기 */
+        }
+    </style>
+</head>
+<body>
+    <div class="traffic-light-container">
+        <div id="redLight" class="light-box red-light active" onclick="handleLightClick('RED')">
+            <svg class="walk-svg" viewBox="0 0 24 24"><path d="M12,2A2,2 0 0,1 14,4A2,2 0 0,1 12,6A2,2 0 0,1 10,4A2,2 0 0,1 12,2M10.5,22V16H8V11H16V16H13.5V22H10.5Z" /></svg>
+        </div>
+        <div id="timerDisplay" class="timer-display">5</div>
+        <div id="greenLight" class="light-box green-light" onclick="handleLightClick('GREEN')">
+            <svg class="walk-svg" viewBox="0 0 24 24"><path d="M13.5,5.5A1.5,1.5 0 0,1 15,7A1.5,1.5 0 0,1 13.5,8.5A1.5,1.5 0 0,1 12,7A1.5,1.5 0 0,1 12,5.5M9.8,22L11,17.3L13,19V22H15V17.5L13.2,15.8L13.8,12.7C14.7,13.8 16,14.5 17.5,14.5V12.5C16.2,12.5 15.2,11.7 14.7,10.7L13.8,9.2C13.5,8.7 12.9,8.4 12.3,8.4C12,8.4 11.7,8.5 11.4,8.6L7,10.5V14.5H9V11.8L10.6,11.2L9.1,18.3L5.4,17.5L5,19.5L9.8,22Z" /></svg>
+        </div>
+    </div>
+    <div class="control-panel">
+        <div class="mode-select">
+            <button id="btnAuto" class="mode-btn active" onclick="setMode('AUTO')">자동 모드</button>
+            <button id="btnManual" class="mode-btn" onclick="setMode('MANUAL')">수동 모드</button>
+        </div>
+        <div class="time-settings">
+            <div class="time-input-group"><label>🔴 빨간불 시간 (초):</label><input type="number" id="inputRedTime" value="5" min="2" onchange="updateSettings()"></div>
+            <div class="time-input-group"><label>🟢 초록불 시간 (초):</label><input type="number" id="inputGreenTime" value="8" min="5" onchange="updateSettings()"></div>
+        </div>
+    </div>
+    <div class="road-container" id="road"></div>
+    <script>
+        let currentLight = 'RED', currentMode = 'AUTO', timeLeft = 5, mainTimer = null;
+        let settings = { redTime: 5, greenTime: 8, blinkStart: 3 };
+        let audioCtx = null;
+        
+        // 다중 차량 관리 데이터
+        let carsData = [];
+        const MAX_CARS = 3;
+        const carEmojis = ['🚗', '🚑', '🚌', '🚒', '🚕', '🚚', '🚓'];
+
+        function initAudio() { if (!audioCtx) { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } }
+        function playDongDang() {
+            try { initAudio(); const now = audioCtx.currentTime;
+                let osc1 = audioCtx.createOscillator(), gain1 = audioCtx.createGain(); osc1.type = 'sine'; osc1.frequency.setValueAtTime(987.77, now); gain1.gain.setValueAtTime(0.2, now); gain1.gain.exponentialRampToValueAtTime(0.01, now + 0.4); osc1.connect(gain1); gain1.connect(audioCtx.destination); osc1.start(now); osc1.stop(now + 0.4);
+                let osc2 = audioCtx.createOscillator(), gain2 = audioCtx.createGain(); osc2.type = 'sine'; osc2.frequency.setValueAtTime(783.99, now + 0.22); gain2.gain.setValueAtTime(0.2, now + 0.22); gain2.gain.exponentialRampToValueAtTime(0.01, now + 0.6); osc2.connect(gain2); gain2.connect(audioCtx.destination); osc2.start(now + 0.22); osc2.stop(now + 0.6);
+            } catch(e) { console.log(e); }
+        }
+        window.onload = function() { updateSettings(); resetTimer(); startLoop(); initMultipleCars(); };
+        function updateSettings() {
+            settings.redTime = parseInt(document.getElementById('inputRedTime').value) || 5; settings.greenTime = parseInt(document.getElementById('inputGreenTime').value) || 8;
+            if(currentLight === 'RED' && timeLeft > settings.redTime) timeLeft = settings.redTime; if(currentLight === 'GREEN' && timeLeft > settings.greenTime) timeLeft = settings.greenTime;
+            document.getElementById('timerDisplay').innerText = (currentMode === 'MANUAL') ? "-" : timeLeft;
+        }
+        function setMode(mode) {
+            currentMode = mode; document.getElementById('btnAuto').classList.toggle('active', mode === 'AUTO'); document.getElementById('btnManual').classList.toggle('active', mode === 'MANUAL');
+            if(mode === 'MANUAL') { document.getElementById('timerDisplay').innerText = "-"; clearInterval(mainTimer); document.getElementById('greenLight').classList.remove('blinking'); } else { resetTimer(); startLoop(); }
+        }
+        function resetTimer() { timeLeft = (currentLight === 'RED') ? settings.redTime : settings.greenTime; document.getElementById('timerDisplay').innerText = timeLeft; }
+        function startLoop() {
+            clearInterval(mainTimer);
+            mainTimer = setInterval(() => {
+                if (currentMode === 'MANUAL') return;
+                timeLeft--; document.getElementById('timerDisplay').innerText = timeLeft;
+                const greenLightDiv = document.getElementById('greenLight');
+                if (currentLight === 'GREEN' && timeLeft <= settings.blinkStart) { greenLightDiv.classList.add('blinking'); } else { greenLightDiv.classList.remove('blinking'); }
+                if (timeLeft <= 0) { switchLight(); }
+            }, 1000);
+        }
+        function handleLightClick(clickedLight) { initAudio(); if (currentMode === 'MANUAL') { if (currentLight !== clickedLight) { currentLight = clickedLight; renderLightUI(); } } else { switchLight(); } }
+        function switchLight() { currentLight = (currentLight === 'RED') ? 'GREEN' : 'RED'; renderLightUI(); if (currentMode === 'AUTO') { resetTimer(); } }
+        function renderLightUI() {
+            const redLightDiv = document.getElementById('redLight'), greenLightDiv = document.getElementById('greenLight'); greenLightDiv.classList.remove('blinking');
+            if (currentLight === 'RED') { redLightDiv.classList.add('active'); greenLightDiv.classList.remove('active'); } else { redLightDiv.classList.remove('active'); greenLightDiv.classList.add('active'); playDongDang(); }
+        }
+
+        // 다중 차량 스폰 및 애니메이션
+        function initMultipleCars() {
+            const road = document.getElementById('road');
+            road.innerHTML = '';
+            carsData = [];
+
+            for (let i = 0; i < MAX_CARS; i++) {
+                let carDiv = document.createElement('div');
+                carDiv.className = 'car';
+                carDiv.innerText = carEmojis[Math.floor(Math.random() * carEmojis.length)];
+                road.appendChild(carDiv);
+
+                carsData.push({
+                    element: carDiv,
+                    x: -120 - (i * 180), // 시작 위치 간격 벌리기
+                    speed: 3 + Math.random() * 2.5 // 무작위 속도 부여
+                });
+            }
+
+            function animate() {
+                carsData.forEach((car) => {
+                    if (currentLight !== 'RED') {
+                        car.x += car.speed;
+                    }
+                    
+                    // 화면 밖으로 완전히 사라지면 왼쪽 뒤편에서 새 이모지로 초기화되어 재출발
+                    if (car.x > road.clientWidth + 50) {
+                        car.x = -150;
+                        car.speed = 3 + Math.random() * 2.5;
+                        car.element.innerText = carEmojis[Math.floor(Math.random() * carEmojis.length)];
+                    }
+                    car.element.style.left = car.x + 'px';
+                });
+                requestAnimationFrame(animate);
+            }
+            animate();
+        }
+    </script>
+</body>
+</html>

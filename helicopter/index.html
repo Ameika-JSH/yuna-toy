@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#8bd8f7">
+    <title>소리로 날리는 헬기</title>
+    <style>
+        :root {
+            color-scheme: light;
+            font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+            font-synthesis: none;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            min-width: 320px;
+            min-height: 100vh;
+            margin: 0;
+            display: grid;
+            place-items: center;
+            padding: 20px;
+            color: #17364b;
+            background: linear-gradient(180deg, #a9e5fb 0%, #e8f9ff 72%, #f8fdff 100%);
+        }
+
+        .game {
+            width: min(100%, 760px);
+            text-align: center;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(1.7rem, 5vw, 2.5rem);
+            letter-spacing: -0.06em;
+        }
+
+        .subtitle {
+            margin: 8px 0 20px;
+            color: #41677b;
+            font-size: 0.98rem;
+        }
+
+        .sky {
+            position: relative;
+            height: min(54vh, 390px);
+            min-height: 250px;
+            overflow: hidden;
+            border: 4px solid rgba(255, 255, 255, 0.9);
+            border-radius: 28px;
+            background:
+                radial-gradient(ellipse at 75% 22%, rgba(255, 255, 255, 0.9) 0 5%, transparent 5.5%),
+                linear-gradient(#73cef0, #c8effc 83%, #a9df8b 83%);
+            box-shadow: 0 16px 34px rgba(34, 111, 145, 0.17);
+        }
+
+        .cloud {
+            position: absolute;
+            width: 90px;
+            height: 24px;
+            border-radius: 50px;
+            background: rgba(255, 255, 255, 0.8);
+        }
+        .cloud::before, .cloud::after {
+            position: absolute;
+            bottom: 8px;
+            content: "";
+            border-radius: 50%;
+            background: inherit;
+        }
+        .cloud::before { left: 18px; width: 34px; height: 34px; }
+        .cloud::after { left: 43px; width: 27px; height: 27px; }
+        .cloud-one { top: 20%; left: 12%; transform: scale(.8); }
+        .cloud-two { top: 38%; right: 9%; transform: scale(.62); opacity: .8; }
+
+        .flight-path {
+            position: absolute;
+            top: 12%;
+            bottom: 18%;
+            left: 50%;
+            width: 2px;
+            border-left: 2px dashed rgba(255, 255, 255, .45);
+        }
+
+        .helicopter {
+            position: absolute;
+            z-index: 1;
+            left: 50%;
+            bottom: 14%;
+            width: 150px;
+            height: 100px;
+            transform: translate(-50%, 0);
+            will-change: bottom;
+            transition: filter .2s ease;
+        }
+
+        .helicopter svg { width: 100%; height: 100%; overflow: visible; }
+        .rotor {
+            transform-origin: 77px 19px;
+            animation: rotor-spin .12s linear infinite;
+        }
+        .helicopter:not(.flying) .rotor { animation-duration: .35s; }
+        @keyframes rotor-spin { to { transform: rotate(360deg); } }
+
+        .status {
+            min-height: 1.5em;
+            margin: 16px 0 12px;
+            font-weight: 700;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        button {
+            min-height: 48px;
+            padding: 0 22px;
+            border: 0;
+            border-radius: 999px;
+            color: #fff;
+            background: #087da8;
+            box-shadow: 0 5px 0 #056384;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+            touch-action: manipulation;
+        }
+        button:hover { background: #066d94; }
+        button:active { transform: translateY(3px); box-shadow: 0 2px 0 #056384; }
+        button:focus-visible, input:focus-visible { outline: 3px solid #ffbd3e; outline-offset: 3px; }
+        button:disabled { cursor: wait; opacity: .75; }
+
+        .meter-wrap {
+            width: min(100%, 250px);
+            text-align: left;
+        }
+        .meter-label {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+            color: #41677b;
+            font-size: .82rem;
+            font-weight: 700;
+        }
+        .meter {
+            height: 13px;
+            overflow: hidden;
+            border: 2px solid #fff;
+            border-radius: 99px;
+            background: #d3eaf1;
+        }
+        .meter-level {
+            width: 0;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #50c878, #ffca48, #ff765e);
+            transition: width .08s linear;
+        }
+
+        .sensitivity {
+            width: min(100%, 320px);
+            margin: 22px auto 0;
+            padding: 13px 16px;
+            border: 1px solid rgba(54, 133, 160, .17);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .64);
+            text-align: left;
+        }
+        .sensitivity label {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 6px;
+            font-size: .9rem;
+            font-weight: 700;
+        }
+        input[type="range"] { width: 100%; accent-color: #087da8; }
+
+        .help {
+            max-width: 590px;
+            margin: 14px auto 0;
+            color: #41677b;
+            font-size: .84rem;
+            line-height: 1.6;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after { animation-duration: .01ms !important; }
+        }
+    </style>
+</head>
+<body>
+    <main class="game">
+        <h1>소리로 날리는 헬기 🚁</h1>
+        <p class="subtitle">마이크에 대고 소리 내면 헬기가 위로 올라가요!</p>
+
+        <section class="sky" aria-label="헬기 비행장">
+            <div class="cloud cloud-one" aria-hidden="true"></div>
+            <div class="cloud cloud-two" aria-hidden="true"></div>
+            <div class="flight-path" aria-hidden="true"></div>
+            <div class="helicopter" id="helicopter" aria-hidden="true">
+                <svg viewBox="0 0 150 100" role="img">
+                    <g class="rotor">
+                        <path d="M22 19h108" stroke="#314c5b" stroke-width="5" stroke-linecap="round"/>
+                        <path d="M77 19v13" stroke="#314c5b" stroke-width="5" stroke-linecap="round"/>
+                    </g>
+                    <path d="M29 56 8 45l-5 5 21 17" fill="#ffb83f" stroke="#314c5b" stroke-width="3" stroke-linejoin="round"/>
+                    <path d="M20 61h20" stroke="#314c5b" stroke-width="4" stroke-linecap="round"/>
+                    <path d="M39 43c8-13 34-17 53-8 9 4 14 12 13 21l-4 12H42c-10-3-13-15-3-25Z" fill="#f2bc49" stroke="#314c5b" stroke-width="3"/>
+                    <path d="M67 37h15c8 2 12 8 13 15H69Z" fill="#b9edfa" stroke="#314c5b" stroke-width="2"/>
+                    <path d="M104 55h24l10 5-10 5h-28" fill="#f2bc49" stroke="#314c5b" stroke-width="3" stroke-linejoin="round"/>
+                    <path d="M133 52v17m-7-8h14" stroke="#314c5b" stroke-width="3" stroke-linecap="round"/>
+                    <path d="M48 72h49m-43 0-5 5m40-5 5 5" fill="none" stroke="#314c5b" stroke-width="4" stroke-linecap="round"/>
+                    <circle cx="45" cy="58" r="3" fill="#314c5b"/>
+                </svg>
+            </div>
+        </section>
+
+        <p class="status" id="status" role="status" aria-live="polite">시작 버튼을 누르고 마이크를 허용해 주세요.</p>
+        <div class="controls">
+            <button type="button" id="toggleButton">🎙️ 시작하기</button>
+            <div class="meter-wrap">
+                <div class="meter-label"><span>마이크 소리</span><span id="levelText">0%</span></div>
+                <div class="meter" role="meter" aria-label="마이크 소리 크기" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                    <div class="meter-level" id="meterLevel"></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="sensitivity">
+            <label for="sensitivity">
+                <span>소리 민감도</span>
+                <span id="sensitivityText">보통</span>
+            </label>
+            <input id="sensitivity" type="range" min="1" max="10" value="5">
+        </div>
+        <p class="help">대부분의 최신 브라우저에서는 HTML 파일을 직접 열어도 마이크를 사용할 수 있어요. 시작 버튼을 누르고 권한을 허용해 주세요. 작동하지 않으면 브라우저 제한일 수 있으니 localhost 또는 HTTPS로 열어 보세요.</p>
+    </main>
+
+    <script>
+        const toggleButton = document.getElementById("toggleButton");
+        const statusText = document.getElementById("status");
+        const helicopter = document.getElementById("helicopter");
+        const meter = document.querySelector(".meter");
+        const meterLevel = document.getElementById("meterLevel");
+        const levelText = document.getElementById("levelText");
+        const sensitivity = document.getElementById("sensitivity");
+        const sensitivityText = document.getElementById("sensitivityText");
+
+        let audioContext;
+        let analyser;
+        let microphone;
+        let animationFrame;
+        let stream;
+        let height = 14;
+        let velocity = 0;
+        let lastFrame = 0;
+        const samples = new Uint8Array(1024);
+
+        function updateSensitivityLabel() {
+            const value = Number(sensitivity.value);
+            sensitivityText.textContent = value < 4 ? "높음" : value > 7 ? "낮음" : "보통";
+        }
+
+        function stopMicrophone() {
+            cancelAnimationFrame(animationFrame);
+            if (stream) stream.getTracks().forEach(track => track.stop());
+            if (audioContext && audioContext.state !== "closed") audioContext.close();
+            stream = undefined;
+            audioContext = undefined;
+            analyser = undefined;
+            microphone = undefined;
+            helicopter.classList.remove("flying");
+            meterLevel.style.width = "0%";
+            levelText.textContent = "0%";
+            meter.setAttribute("aria-valuenow", "0");
+            toggleButton.textContent = "🎙️ 다시 시작";
+        }
+
+        function animate(timestamp) {
+            if (!analyser) return;
+            const delta = lastFrame ? Math.min((timestamp - lastFrame) / 1000, 0.05) : 0;
+            lastFrame = timestamp;
+
+            analyser.getByteTimeDomainData(samples);
+            let sum = 0;
+            for (const sample of samples) {
+                const normalized = (sample - 128) / 128;
+                sum += normalized * normalized;
+            }
+            const volume = Math.sqrt(sum / samples.length);
+            const level = Math.min(100, Math.round(volume * 350));
+            const threshold = 0.015 + (10 - Number(sensitivity.value)) * 0.003;
+            const lift = Math.max(0, volume - threshold);
+
+            meterLevel.style.width = level + "%";
+            levelText.textContent = level + "%";
+            meter.setAttribute("aria-valuenow", String(level));
+
+            if (lift > 0) {
+                velocity += lift * 3500 * delta;
+                helicopter.classList.add("flying");
+            } else {
+                helicopter.classList.remove("flying");
+            }
+            velocity -= 55 * delta;
+            velocity = Math.max(-35, Math.min(70, velocity));
+            height = Math.max(14, Math.min(80, height + velocity * delta));
+            if (height === 14 && velocity < 0) velocity = 0;
+            helicopter.style.bottom = height + "%";
+            animationFrame = requestAnimationFrame(animate);
+        }
+
+        async function startMicrophone() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error("이 브라우저에서는 마이크를 사용할 수 없어요. HTTPS 또는 localhost에서 열어 주세요.");
+            }
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            await audioContext.resume();
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 1024;
+            microphone = audioContext.createMediaStreamSource(stream);
+            microphone.connect(analyser);
+            lastFrame = 0;
+            statusText.textContent = "좋아요! 소리를 내서 헬기를 날려 보세요.";
+            toggleButton.textContent = "⏹ 멈추기";
+            animationFrame = requestAnimationFrame(animate);
+        }
+
+        toggleButton.addEventListener("click", async () => {
+            if (stream) {
+                stopMicrophone();
+                statusText.textContent = "마이크를 멈췄어요. 다시 시작할 수 있어요.";
+                return;
+            }
+
+            toggleButton.disabled = true;
+            statusText.textContent = "마이크 연결을 기다리는 중...";
+            try {
+                await startMicrophone();
+            } catch (error) {
+                stopMicrophone();
+                statusText.textContent = error.name === "NotAllowedError"
+                    ? "마이크 권한이 거부됐어요. 브라우저 설정에서 마이크를 허용해 주세요."
+                    : error.message || "마이크를 시작하지 못했어요. 연결과 권한을 확인해 주세요.";
+            } finally {
+                toggleButton.disabled = false;
+            }
+        });
+
+        sensitivity.addEventListener("input", updateSensitivityLabel);
+        updateSensitivityLabel();
+    </script>
+</body>
+</html>
