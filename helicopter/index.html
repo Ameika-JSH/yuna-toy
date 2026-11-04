@@ -185,6 +185,12 @@
             font-weight: 700;
         }
         input[type="range"] { width: 100%; accent-color: #087da8; }
+        .dead-zone-help {
+            margin: 6px 0 0;
+            color: #41677b;
+            font-size: .76rem;
+            line-height: 1.45;
+        }
 
         .help {
             max-width: 590px;
@@ -278,6 +284,14 @@
             </label>
             <input id="sensitivity" type="range" min="1" max="10" value="5">
         </div>
+        <div class="sensitivity">
+            <label for="deadZone">
+                <span>마이크 입력 데드존</span>
+                <span id="deadZoneText">8%</span>
+            </label>
+            <input id="deadZone" type="range" min="0" max="30" value="8">
+            <p class="dead-zone-help">데드존보다 작은 주변 소리는 헬기 움직임에 반영하지 않아요.</p>
+        </div>
         <p class="help">대부분의 최신 브라우저에서는 HTML 파일을 직접 열어도 마이크를 사용할 수 있어요. 시작 버튼을 누르고 권한을 허용해 주세요. 작동하지 않으면 브라우저 제한일 수 있으니 localhost 또는 HTTPS로 열어 보세요.</p>
     </main>
 
@@ -290,6 +304,8 @@
         const levelText = document.getElementById("levelText");
         const sensitivity = document.getElementById("sensitivity");
         const sensitivityText = document.getElementById("sensitivityText");
+        const deadZone = document.getElementById("deadZone");
+        const deadZoneText = document.getElementById("deadZoneText");
 
         let audioContext;
         let analyser;
@@ -334,7 +350,8 @@
             }
             const volume = Math.sqrt(sum / samples.length);
             const level = Math.min(100, Math.round(volume * 350));
-            const threshold = 0.015 + (10 - Number(sensitivity.value)) * 0.003;
+            const sensitivityThreshold = 0.015 + (10 - Number(sensitivity.value)) * 0.003;
+            const threshold = Math.max(sensitivityThreshold, Number(deadZone.value) / 350);
             const lift = Math.max(0, volume - threshold);
 
             meterLevel.style.width = level + "%";
@@ -394,6 +411,9 @@
         });
 
         sensitivity.addEventListener("input", updateSensitivityLabel);
+        deadZone.addEventListener("input", () => {
+            deadZoneText.textContent = deadZone.value + "%";
+        });
         updateSensitivityLabel();
     </script>
 </body>

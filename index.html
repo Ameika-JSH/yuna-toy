@@ -53,7 +53,7 @@
 
         .games {
             display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
             gap: 20px;
         }
 
@@ -74,6 +74,7 @@
             transition: transform .18s ease, box-shadow .18s ease;
         }
         .game-card:nth-child(2) { --accent: #43a879; --tint: #e6f7ed; }
+        .game-card:nth-child(3) { --accent: #3547d4; --tint: #e9eaff; }
         .game-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 18px 34px rgba(77, 82, 102, .14);
@@ -160,6 +161,14 @@
                 <p class="folder">HELICOPTER</p>
                 <h2>소리로 날리는 헬기</h2>
                 <p class="description">마이크에 소리를 내서 헬기를 하늘 높이 날려 봐요.</p>
+                <span class="play">게임 시작하기 <span aria-hidden="true">→</span></span>
+            </a>
+
+            <a class="game-card" href="./pinwheel/index.html">
+                <span class="icon" aria-hidden="true">🌀</span>
+                <p class="folder">PINWHEEL</p>
+                <h2>바람개비 실험실</h2>
+                <p class="description">마이크에 바람을 불어 바람개비를 빙글빙글 돌려 봐요.</p>
                 <span class="play">게임 시작하기 <span aria-hidden="true">→</span></span>
             </a>
         </section>

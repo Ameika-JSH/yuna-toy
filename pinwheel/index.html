@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="theme-color" content="#f2eddf">
+    <title>바람을 모아, 빙글</title>
+    <style>
+        :root {
+            color-scheme: light;
+            font-family: "Malgun Gothic", "Apple SD Gothic Neo", sans-serif;
+            color: #242628;
+            background: #f2eddf;
+            font-synthesis: none;
+            --ink: #242628;
+            --paper: #f2eddf;
+            --blue: #3547d4;
+            --red: #ef5c3f;
+            --lime: #d3ef59;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            min-width: 320px;
+            min-height: 100vh;
+            margin: 0;
+            padding: 28px 20px 36px;
+            background:
+                radial-gradient(ellipse at 82% 18%, rgba(211, 239, 89, .6) 0 8%, transparent 8.2%),
+                radial-gradient(ellipse at 10% 78%, rgba(239, 92, 63, .12) 0 12%, transparent 12.2%),
+                var(--paper);
+        }
+
+        main { width: min(100%, 900px); margin: 0 auto; }
+
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            gap: 18px;
+            margin-bottom: 20px;
+        }
+
+        .eyebrow, .edition, .wheel-number, .micro-label {
+            font-size: .72rem;
+            font-weight: 800;
+            letter-spacing: .13em;
+            text-transform: uppercase;
+        }
+        .eyebrow { margin: 0 0 9px; color: var(--red); }
+        h1 {
+            margin: 0;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: clamp(2.1rem, 7vw, 4.7rem);
+            font-weight: 500;
+            letter-spacing: -.075em;
+            line-height: .96;
+        }
+        .subtitle {
+            max-width: 230px;
+            margin: 0 0 3px;
+            color: #65665f;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 1.02rem;
+            font-style: italic;
+            line-height: 1.5;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(250px, .75fr);
+            gap: 16px;
+        }
+
+        .stage {
+            position: relative;
+            display: grid;
+            min-height: 390px;
+            overflow: hidden;
+            place-items: center;
+            border: 1px solid var(--ink);
+            border-radius: 48% 48% 22px 22px / 36% 36% 22px 22px;
+            background: #e4d8c3;
+            isolation: isolate;
+        }
+        .stage::before {
+            position: absolute;
+            z-index: -1;
+            top: 10%;
+            left: 50%;
+            width: min(76%, 310px);
+            aspect-ratio: 1;
+            border: 1px solid rgba(36, 38, 40, .25);
+            border-radius: 50%;
+            content: "";
+            transform: translateX(-50%);
+        }
+        .stage::after {
+            position: absolute;
+            z-index: -1;
+            right: 9%;
+            bottom: 17%;
+            width: 54px;
+            height: 54px;
+            border: 1px solid var(--ink);
+            border-radius: 50%;
+            background: var(--lime);
+            content: "";
+        }
+
+        .sun-mark {
+            position: absolute;
+            top: 10%;
+            left: 10%;
+            color: var(--red);
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 2rem;
+            transform: rotate(-12deg);
+        }
+        .stage-note {
+            position: absolute;
+            top: 12%;
+            right: 8%;
+            color: #66645b;
+            font-size: .7rem;
+            font-weight: 800;
+            letter-spacing: .1em;
+            writing-mode: vertical-rl;
+        }
+
+        .pinwheel {
+            position: absolute;
+            top: 51%;
+            left: 50%;
+            width: min(52vw, 260px);
+            min-width: 190px;
+            aspect-ratio: 1;
+            transform: translate(-50%, -50%);
+        }
+        .pinwheel svg { display: block; width: 100%; height: 100%; overflow: visible; }
+        .wheel-design { display: none; }
+        .wheel-design.is-active { display: block; }
+        .wheel-hub {
+            fill: var(--ink);
+            stroke: var(--paper);
+            stroke-width: 3;
+        }
+
+        .stem {
+            position: absolute;
+            top: 51%;
+            left: 50%;
+            width: 8px;
+            height: 38%;
+            border: 1px solid var(--ink);
+            border-radius: 8px;
+            background: #f6f0df;
+            transform: translateX(-50%);
+        }
+        .stem::after {
+            position: absolute;
+            right: -17px;
+            bottom: -7px;
+            left: -17px;
+            height: 12px;
+            border: 1px solid var(--ink);
+            border-radius: 50%;
+            background: var(--red);
+            content: "";
+        }
+
+        .stage-caption {
+            position: absolute;
+            right: 20px;
+            bottom: 17px;
+            left: 20px;
+            display: flex;
+            justify-content: space-between;
+            gap: 8px;
+            color: #56564f;
+            font-size: .72rem;
+            font-weight: 800;
+            letter-spacing: .08em;
+            text-transform: uppercase;
+        }
+
+        .side-panel { display: flex; flex-direction: column; gap: 12px; }
+        .paper-card {
+            padding: 17px;
+            border: 1px solid var(--ink);
+            border-radius: 18px;
+            background: #fbf8ef;
+            box-shadow: 4px 4px 0 var(--ink);
+        }
+        .micro-label { display: block; margin-bottom: 12px; color: #696a62; }
+        .wheel-picker { display: grid; grid-template-columns: 1fr; gap: 7px; }
+        .wheel-choice {
+            display: grid;
+            grid-template-columns: 36px 1fr auto;
+            align-items: center;
+            gap: 10px;
+            min-height: 53px;
+            padding: 7px 10px;
+            border: 1px solid #c8c2b4;
+            border-radius: 12px;
+            color: var(--ink);
+            background: transparent;
+            font: inherit;
+            text-align: left;
+            cursor: pointer;
+        }
+        .wheel-choice:hover { border-color: var(--ink); }
+        .wheel-choice[aria-pressed="true"] {
+            border-color: var(--blue);
+            background: #e9eaff;
+            box-shadow: inset 4px 0 var(--blue);
+        }
+        .choice-icon { font-size: 1.45rem; text-align: center; }
+        .choice-name { font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; }
+        .wheel-number { color: #888579; font-size: .63rem; }
+
+        .sound-card { flex: 1; }
+        .status {
+            min-height: 3em;
+            margin: 0 0 12px;
+            color: #4e504b;
+            font-size: .87rem;
+            line-height: 1.5;
+        }
+        .start-button {
+            width: 100%;
+            min-height: 50px;
+            border: 1px solid var(--ink);
+            border-radius: 999px;
+            color: #fff;
+            background: var(--blue);
+            box-shadow: 3px 3px 0 var(--ink);
+            font: inherit;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .start-button:hover { background: #2637c2; }
+        .start-button:active { transform: translate(2px, 2px); box-shadow: 1px 1px 0 var(--ink); }
+        button:focus-visible, input:focus-visible { outline: 3px solid var(--red); outline-offset: 3px; }
+        button:disabled { cursor: wait; opacity: .7; }
+
+        .meter-heading, .dead-zone-label {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 16px 0 7px;
+            font-size: .78rem;
+            font-weight: 800;
+        }
+        .meter {
+            height: 14px;
+            overflow: hidden;
+            border: 1px solid var(--ink);
+            border-radius: 99px;
+            background: #dedacd;
+        }
+        .meter-level {
+            width: 0;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, var(--lime), #ffbd52, var(--red));
+            transition: width .08s linear;
+        }
+        .dead-zone-label { margin-top: 17px; }
+        input[type="range"] { width: 100%; accent-color: var(--red); }
+        .dead-zone-help {
+            margin: 5px 0 0;
+            color: #77766d;
+            font-size: .72rem;
+            line-height: 1.45;
+        }
+        .edition {
+            margin: 18px 0 0;
+            color: #7a786f;
+            text-align: right;
+        }
+
+        @media (max-width: 680px) {
+            body { padding: 22px 14px 28px; }
+            header { align-items: flex-start; flex-direction: column; gap: 10px; }
+            .subtitle { max-width: 100%; }
+            .layout { grid-template-columns: 1fr; }
+            .stage { min-height: 330px; }
+            .pinwheel { width: min(58vw, 230px); }
+            .wheel-picker { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+            .wheel-choice { grid-template-columns: 1fr; justify-items: center; gap: 3px; padding: 9px 5px; }
+            .wheel-number { display: none; }
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <header>
+            <div>
+                <p class="eyebrow">Yuna's little wind lab · No. 02</p>
+                <h1>바람을 모아,<br>빙글.</h1>
+            </div>
+            <p class="subtitle">작은 숨으로 시작해<br>얼마나 오래 돌릴 수 있을까요?</p>
+        </header>
+
+        <section class="layout" aria-label="바람개비 게임">
+            <div class="stage" aria-label="바람개비 무대">
+                <span class="sun-mark" aria-hidden="true">✳</span>
+                <span class="stage-note" aria-hidden="true">AIR STUDY / 03</span>
+                <div class="stem" aria-hidden="true"></div>
+                <div class="pinwheel" id="pinwheel">
+                    <svg viewBox="0 0 240 240" role="img" aria-label="선택한 바람개비">
+                        <g class="wheel-design is-active" data-wheel="classic">
+                            <path d="M120 111C95 93 66 64 79 42c12-20 38-1 48 62Z" fill="#3547d4"/>
+                            <path d="M129 120c18-25 47-54 69-41 20 12 1 38-62 48Z" fill="#ef5c3f"/>
+                            <path d="M120 129c25 18 54 47 41 69-12 20-38 1-48-62Z" fill="#d3ef59" stroke="#242628" stroke-width="2"/>
+                            <path d="M111 120c-18 25-47 54-69 41-20-12-1-38 62-48Z" fill="#f3a5bd"/>
+                        </g>
+                        <g class="wheel-design" data-wheel="weird">
+                            <path d="M119 112C86 96 65 64 81 49c16-16 32 12 46 61Z" fill="#ef5c3f"/>
+                            <path d="M128 118c16-33 48-54 63-38 16 16-12 32-61 46Z" fill="#d3ef59"/>
+                            <path d="M121 128c33 16 54 48 38 63-16 16-32-12-46-61Z" fill="#3547d4"/>
+                            <path d="M112 121c-16 33-48 54-63 38-16-16 12-32 61-46Z" fill="#f2b34f"/>
+                            <circle cx="120" cy="120" r="13" fill="#f2eddf" stroke="#242628" stroke-width="3"/>
+                        </g>
+                        <g class="wheel-design" data-wheel="pop">
+                            <path d="M120 115c-24-11-46-44-31-59 13-13 28 11 31 59Z" fill="#d3ef59"/>
+                            <path d="M125 120c11-24 44-46 59-31 13 13-11 28-59 31Z" fill="#3547d4"/>
+                            <path d="M120 125c24 11 46 44 31 59-13 13-28-11-31-59Z" fill="#ef5c3f"/>
+                            <path d="M115 120c-11 24-44 46-59 31-13-13 11-28 59-31Z" fill="#f3a5bd"/>
+                            <path d="M120 93v54m-27-27h54" stroke="#242628" stroke-width="2"/>
+                        </g>
+                        <circle class="wheel-hub" cx="120" cy="120" r="9"/>
+                        <circle cx="120" cy="120" r="3" fill="#d3ef59"/>
+                    </svg>
+                </div>
+                <div class="stage-caption">
+                    <span id="wheelCaption">01 / classic</span>
+                    <span id="spinCaption">바람을 기다리는 중</span>
+                </div>
+            </div>
+
+            <aside class="side-panel">
+                <section class="paper-card" aria-labelledby="wheelLabel">
+                    <span class="micro-label" id="wheelLabel">01 — 오늘의 바람개비</span>
+                    <div class="wheel-picker">
+                        <button class="wheel-choice" type="button" data-choice="classic" aria-pressed="true">
+                            <span class="choice-icon" aria-hidden="true">✳</span>
+                            <span class="choice-name">클래식</span>
+                            <span class="wheel-number">NO. 01</span>
+                        </button>
+                        <button class="wheel-choice" type="button" data-choice="weird" aria-pressed="false">
+                            <span class="choice-icon" aria-hidden="true">✿</span>
+                            <span class="choice-name">위어드</span>
+                            <span class="wheel-number">NO. 02</span>
+                        </button>
+                        <button class="wheel-choice" type="button" data-choice="pop" aria-pressed="false">
+                            <span class="choice-icon" aria-hidden="true">✴</span>
+                            <span class="choice-name">팝</span>
+                            <span class="wheel-number">NO. 03</span>
+                        </button>
+                    </div>
+                </section>
+
+                <section class="paper-card sound-card" aria-label="마이크 설정">
+                    <span class="micro-label">02 — 숨을 불어넣어요</span>
+                    <p class="status" id="status" role="status" aria-live="polite">시작 버튼을 누르고 마이크를 허용해 주세요.</p>
+                    <button class="start-button" id="toggleButton" type="button">🎙 마이크 시작</button>
+
+                    <div class="meter-heading">
+                        <span>들어오는 바람</span>
+                        <span id="levelText">0%</span>
+                    </div>
+                    <div class="meter" role="meter" aria-label="마이크 소리 크기" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+                        <div class="meter-level" id="meterLevel"></div>
+                    </div>
+
+                    <label class="dead-zone-label" for="deadZone">
+                        <span>마이크 입력 데드존</span>
+                        <span id="deadZoneText">8%</span>
+                    </label>
+                    <input id="deadZone" type="range" min="0" max="30" value="8">
+                    <p class="dead-zone-help">설정한 크기보다 작은 소리는 무시해요. 바람이 멎으면 바람개비가 빠르게 느려져요.</p>
+                </section>
+            </aside>
+        </section>
+
+        <p class="edition">MODERN · CLASSIC · A LITTLE WEIRD</p>
+    </main>
+
+    <script>
+        const toggleButton = document.getElementById("toggleButton");
+        const statusText = document.getElementById("status");
+        const meter = document.querySelector(".meter");
+        const meterLevel = document.getElementById("meterLevel");
+        const levelText = document.getElementById("levelText");
+        const deadZone = document.getElementById("deadZone");
+        const deadZoneText = document.getElementById("deadZoneText");
+        const pinwheel = document.getElementById("pinwheel");
+        const spinCaption = document.getElementById("spinCaption");
+        const wheelCaption = document.getElementById("wheelCaption");
+        const samples = new Uint8Array(1024);
+        const wheelNames = { classic: "클래식", weird: "위어드", pop: "팝" };
+
+        let audioContext;
+        let analyser;
+        let microphone;
+        let stream;
+        let animationFrame;
+        let lastFrame = 0;
+        let angle = 0;
+        let spinSpeed = 0;
+        let windWasDetected = false;
+
+        document.querySelectorAll(".wheel-choice").forEach(button => {
+            button.addEventListener("click", () => selectWheel(button.dataset.choice));
+        });
+
+        function selectWheel(wheel) {
+            document.querySelectorAll(".wheel-choice").forEach(button => {
+                button.setAttribute("aria-pressed", String(button.dataset.choice === wheel));
+            });
+            document.querySelectorAll(".wheel-design").forEach(design => {
+                design.classList.toggle("is-active", design.dataset.wheel === wheel);
+            });
+            const number = wheel === "classic" ? "01" : wheel === "weird" ? "02" : "03";
+            wheelCaption.textContent = number + " / " + wheelNames[wheel].toLowerCase();
+        }
+
+        function setWindStatus(isDetected) {
+            if (isDetected === windWasDetected) return;
+            windWasDetected = isDetected;
+            statusText.textContent = isDetected
+                ? "바람 감지! 계속 소리를 내면 더 빨리 돌아가요."
+                : "바람이 멎었어요. 잠깐이면 바람개비도 멈춰요.";
+        }
+
+        function stopMicrophone() {
+            cancelAnimationFrame(animationFrame);
+            if (stream) stream.getTracks().forEach(track => track.stop());
+            if (audioContext && audioContext.state !== "closed") audioContext.close();
+            stream = undefined;
+            audioContext = undefined;
+            analyser = undefined;
+            microphone = undefined;
+            spinSpeed = 0;
+            windWasDetected = false;
+            pinwheel.style.transform = "translate(-50%, -50%) rotate(" + angle + "deg)";
+            spinCaption.textContent = "바람을 기다리는 중";
+            meterLevel.style.width = "0%";
+            levelText.textContent = "0%";
+            meter.setAttribute("aria-valuenow", "0");
+            toggleButton.textContent = "🎙 다시 시작";
+        }
+
+        function readVolume() {
+            analyser.getByteTimeDomainData(samples);
+            let sum = 0;
+            for (const sample of samples) {
+                const normalized = (sample - 128) / 128;
+                sum += normalized * normalized;
+            }
+            return Math.sqrt(sum / samples.length);
+        }
+
+        function animate(timestamp) {
+            if (!analyser) return;
+            const delta = lastFrame ? Math.min((timestamp - lastFrame) / 1000, 0.05) : 0;
+            lastFrame = timestamp;
+
+            const level = Math.min(100, Math.round(readVolume() * 350));
+            const deadZoneValue = Number(deadZone.value);
+            const wind = level > deadZoneValue
+                ? (level - deadZoneValue) / (100 - deadZoneValue)
+                : 0;
+            const hasWind = wind > 0;
+
+            meterLevel.style.width = level + "%";
+            levelText.textContent = level + "%";
+            meter.setAttribute("aria-valuenow", String(level));
+            setWindStatus(hasWind);
+
+            if (hasWind) {
+                spinSpeed = Math.min(7, spinSpeed + wind * 15 * delta);
+            } else {
+                spinSpeed = Math.max(0, spinSpeed - 9 * delta);
+            }
+
+            angle = (angle + spinSpeed * 360 * delta) % 360;
+            pinwheel.style.transform = "translate(-50%, -50%) rotate(" + angle + "deg)";
+            spinCaption.textContent = spinSpeed < .1
+                ? "바람을 기다리는 중"
+                : spinSpeed < 2.5 ? "천천히, 빙글" : spinSpeed < 5 ? "시원하게 돌아요" : "바람을 타고!";
+            animationFrame = requestAnimationFrame(animate);
+        }
+
+        async function startMicrophone() {
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                throw new Error("이 브라우저에서는 마이크를 사용할 수 없어요. HTTPS 또는 localhost에서 열어 주세요.");
+            }
+            stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            await audioContext.resume();
+            analyser = audioContext.createAnalyser();
+            analyser.fftSize = 1024;
+            microphone = audioContext.createMediaStreamSource(stream);
+            microphone.connect(analyser);
+            lastFrame = 0;
+            windWasDetected = false;
+            statusText.textContent = "좋아요! 소리를 내서 바람개비를 돌려 보세요.";
+            toggleButton.textContent = "⏹ 멈추기";
+            animationFrame = requestAnimationFrame(animate);
+        }
+
+        toggleButton.addEventListener("click", async () => {
+            if (stream) {
+                stopMicrophone();
+                statusText.textContent = "마이크를 멈췄어요. 다시 시작할 수 있어요.";
+                return;
+            }
+
+            toggleButton.disabled = true;
+            statusText.textContent = "마이크 연결을 기다리는 중...";
+            try {
+                await startMicrophone();
+            } catch (error) {
+                stopMicrophone();
+                statusText.textContent = error.name === "NotAllowedError"
+                    ? "마이크 권한이 거부됐어요. 브라우저 설정에서 마이크를 허용해 주세요."
+                    : error.message || "마이크를 시작하지 못했어요. 연결과 권한을 확인해 주세요.";
+            } finally {
+                toggleButton.disabled = false;
+            }
+        });
+
+        deadZone.addEventListener("input", () => {
+            deadZoneText.textContent = deadZone.value + "%";
+        });
+    </script>
+</body>
+</html>
