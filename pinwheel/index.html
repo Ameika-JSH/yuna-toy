@@ -17,6 +17,10 @@
             --blue: #3547d4;
             --red: #ef5c3f;
             --lime: #d3ef59;
+            --blade-1: #f2bf18;
+            --blade-2: #f4d532;
+            --blade-3: #f7a91b;
+            --blade-4: #fff071;
         }
 
         * { box-sizing: border-box; }
@@ -109,15 +113,48 @@
             width: min(58vw, 430px);
             min-width: 230px;
             aspect-ratio: 1;
+            perspective: 900px;
             transform: translate(-50%, -50%);
         }
-        .pinwheel svg { display: block; width: 100%; height: 100%; overflow: visible; }
+        .pinwheel > svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+            overflow: visible;
+            transform-style: preserve-3d;
+        }
         .wheel-design { display: none; }
         .wheel-design.is-active { display: block; }
         .wheel-hub {
             fill: var(--ink);
             stroke: var(--paper);
             stroke-width: 3;
+        }
+        .stage.vertical-axis .stem { display: none; }
+        .stage.vertical-axis .wheel-hub,
+        .stage.vertical-axis .pinwheel > svg > circle { display: none; }
+        .hanger { display: none; }
+        .stage.vertical-axis .hanger {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            z-index: 1;
+            display: block;
+            width: 2px;
+            height: 18%;
+            background: var(--ink);
+            transform: translateX(-50%);
+        }
+        .stage.vertical-axis .hanger::after {
+            position: absolute;
+            bottom: -7px;
+            left: -4px;
+            width: 10px;
+            height: 10px;
+            border: 1px solid var(--ink);
+            border-radius: 50%;
+            background: var(--blade-2);
+            content: "";
         }
 
         .stem {
@@ -203,6 +240,35 @@
         .choice-icon svg { width: 100%; height: 100%; overflow: visible; }
         .choice-name { font-family: Georgia, "Times New Roman", serif; font-size: 1rem; }
         .wheel-number { display: none; }
+        .color-picker {
+            display: grid;
+            grid-template-columns: auto repeat(4, 36px);
+            align-items: center;
+            justify-content: space-between;
+            gap: 7px;
+            margin-top: 10px;
+        }
+        .color-title { color: #56564f; font-size: .78rem; font-weight: 800; }
+        .color-chip {
+            position: relative;
+            width: 34px;
+            height: 34px;
+            overflow: hidden;
+            border: 2px solid #242628;
+            border-radius: 50%;
+            background: var(--chip-color);
+            cursor: pointer;
+        }
+        .color-chip input {
+            position: absolute;
+            inset: -8px;
+            width: 48px;
+            height: 48px;
+            padding: 0;
+            border: 0;
+            cursor: pointer;
+            opacity: 0;
+        }
 
         .sound-card { flex: 1; }
         .status {
@@ -266,6 +332,8 @@
             .wheel-choice { grid-template-columns: 1fr; justify-items: center; gap: 2px; min-height: 88px; padding: 7px 4px; }
             .choice-icon { width: 52px; height: 52px; }
             .choice-name { font-size: .88rem; }
+            .color-picker { grid-template-columns: auto repeat(4, 34px); }
+            .color-chip { width: 32px; height: 32px; }
         }
     </style>
 </head>
@@ -277,56 +345,80 @@
 
         <section class="layout" aria-label="바람개비 게임">
             <div class="stage" aria-label="바람개비 무대">
+                <div class="hanger" aria-hidden="true"></div>
                 <div class="stem" aria-hidden="true"></div>
                 <div class="pinwheel" id="pinwheel">
-                    <svg viewBox="0 0 240 240" role="img" aria-label="선택한 바람개비">
+                    <svg id="wheelGraphic" viewBox="0 0 240 240" role="img" aria-label="선택한 바람개비">
+                        <defs>
+                            <linearGradient id="twistOne" x1="0" x2="1" y1="0" y2="1">
+                                <stop offset="0" stop-color="var(--blade-1)"/>
+                                <stop offset=".48" stop-color="var(--blade-2)"/>
+                                <stop offset="1" stop-color="var(--blade-3)"/>
+                            </linearGradient>
+                            <linearGradient id="twistTwo" x1="0" x2="1" y1="0" y2="1">
+                                <stop offset="0" stop-color="var(--blade-3)"/>
+                                <stop offset=".52" stop-color="var(--blade-4)"/>
+                                <stop offset="1" stop-color="var(--blade-1)"/>
+                            </linearGradient>
+                            <linearGradient id="twistThree" x1="0" x2="1" y1="0" y2="1">
+                                <stop offset="0" stop-color="var(--blade-2)"/>
+                                <stop offset=".5" stop-color="var(--blade-1)"/>
+                                <stop offset="1" stop-color="var(--blade-4)"/>
+                            </linearGradient>
+                        </defs>
                         <g class="wheel-design is-active" data-wheel="paper">
+                            <path d="M43 43H197V197H43Z" fill="#fbf8ef" fill-opacity=".12" stroke="var(--ink)" stroke-width="1.5" stroke-dasharray="4 4" opacity=".55"/>
                             <g>
-                                <path d="M120 120C101 91 61 48 39 35c39 5 74 28 81 63Z" fill="#3547d4" stroke="#242628" stroke-width="2"/>
-                                <path d="M120 120 39 35c35 11 63 33 81 63Z" fill="#6977eb" opacity=".8"/>
-                                <path d="M51 47c25 11 48 31 63 52" fill="none" stroke="#f2eddf" stroke-width="2" opacity=".8"/>
+                                <path d="M120 120C96 94 56 60 43 43c35 7 70 27 77 69Z" fill="var(--blade-1)" stroke="var(--ink)" stroke-width="2"/>
+                                <path d="M120 120 43 43c34 12 60 32 77 69Z" fill="#fff" opacity=".18"/>
+                                <path d="M54 54c26 12 48 32 61 53" fill="none" stroke="#fff" stroke-width="2" opacity=".75"/>
                             </g>
                             <g transform="rotate(90 120 120)">
-                                <path d="M120 120C101 91 61 48 39 35c39 5 74 28 81 63Z" fill="#ef5c3f" stroke="#242628" stroke-width="2"/>
-                                <path d="M120 120 39 35c35 11 63 33 81 63Z" fill="#ff9072" opacity=".8"/>
-                                <path d="M51 47c25 11 48 31 63 52" fill="none" stroke="#f2eddf" stroke-width="2" opacity=".8"/>
+                                <path d="M120 120C96 94 56 60 43 43c35 7 70 27 77 69Z" fill="var(--blade-2)" stroke="var(--ink)" stroke-width="2"/>
+                                <path d="M120 120 43 43c34 12 60 32 77 69Z" fill="#fff" opacity=".18"/>
+                                <path d="M54 54c26 12 48 32 61 53" fill="none" stroke="#fff" stroke-width="2" opacity=".75"/>
                             </g>
                             <g transform="rotate(180 120 120)">
-                                <path d="M120 120C101 91 61 48 39 35c39 5 74 28 81 63Z" fill="#d3ef59" stroke="#242628" stroke-width="2"/>
-                                <path d="M120 120 39 35c35 11 63 33 81 63Z" fill="#e7ff83" opacity=".8"/>
-                                <path d="M51 47c25 11 48 31 63 52" fill="none" stroke="#f2eddf" stroke-width="2" opacity=".8"/>
+                                <path d="M120 120C96 94 56 60 43 43c35 7 70 27 77 69Z" fill="var(--blade-3)" stroke="var(--ink)" stroke-width="2"/>
+                                <path d="M120 120 43 43c34 12 60 32 77 69Z" fill="#fff" opacity=".18"/>
+                                <path d="M54 54c26 12 48 32 61 53" fill="none" stroke="#fff" stroke-width="2" opacity=".75"/>
                             </g>
                             <g transform="rotate(270 120 120)">
-                                <path d="M120 120C101 91 61 48 39 35c39 5 74 28 81 63Z" fill="#f3a5bd" stroke="#242628" stroke-width="2"/>
-                                <path d="M120 120 39 35c35 11 63 33 81 63Z" fill="#ffd0df" opacity=".8"/>
-                                <path d="M51 47c25 11 48 31 63 52" fill="none" stroke="#f2eddf" stroke-width="2" opacity=".8"/>
+                                <path d="M120 120C96 94 56 60 43 43c35 7 70 27 77 69Z" fill="var(--blade-4)" stroke="var(--ink)" stroke-width="2"/>
+                                <path d="M120 120 43 43c34 12 60 32 77 69Z" fill="#fff" opacity=".18"/>
+                                <path d="M54 54c26 12 48 32 61 53" fill="none" stroke="#fff" stroke-width="2" opacity=".75"/>
                             </g>
+                            <circle cx="120" cy="120" r="8" fill="#e4d8c3" stroke="var(--ink)" stroke-width="2"/>
                         </g>
                         <g class="wheel-design" data-wheel="propeller">
                             <g>
-                                <path d="M115 113c-13-25-28-76-10-94 13-13 30-3 31 17 2 24-7 58-12 81Z" fill="#ef5c3f" stroke="#242628" stroke-width="3"/>
-                                <path d="M117 102c-8-25-11-45-8-63" fill="none" stroke="#ffd5b8" stroke-width="4" stroke-linecap="round"/>
+                                <path d="M115 113c-13-25-28-76-10-94 13-13 30-3 31 17 2 24-7 58-12 81Z" fill="var(--blade-1)" stroke="var(--ink)" stroke-width="3"/>
+                                <path d="M117 102c-8-25-11-45-8-63" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".6"/>
                             </g>
                             <g transform="rotate(120 120 120)">
-                                <path d="M115 113c-13-25-28-76-10-94 13-13 30-3 31 17 2 24-7 58-12 81Z" fill="#3547d4" stroke="#242628" stroke-width="3"/>
-                                <path d="M117 102c-8-25-11-45-8-63" fill="none" stroke="#aab3ff" stroke-width="4" stroke-linecap="round"/>
+                                <path d="M115 113c-13-25-28-76-10-94 13-13 30-3 31 17 2 24-7 58-12 81Z" fill="var(--blade-2)" stroke="var(--ink)" stroke-width="3"/>
+                                <path d="M117 102c-8-25-11-45-8-63" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".6"/>
                             </g>
                             <g transform="rotate(240 120 120)">
-                                <path d="M115 113c-13-25-28-76-10-94 13-13 30-3 31 17 2 24-7 58-12 81Z" fill="#d3ef59" stroke="#242628" stroke-width="3"/>
-                                <path d="M117 102c-8-25-11-45-8-63" fill="none" stroke="#f4ffb9" stroke-width="4" stroke-linecap="round"/>
+                                <path d="M115 113c-13-25-28-76-10-94 13-13 30-3 31 17 2 24-7 58-12 81Z" fill="var(--blade-3)" stroke="var(--ink)" stroke-width="3"/>
+                                <path d="M117 102c-8-25-11-45-8-63" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" opacity=".6"/>
                             </g>
                         </g>
                         <g class="wheel-design" data-wheel="weird">
-                            <path d="M116 115C81 104 73 75 91 64c15-9 27 5 19 18-6 10 1 19 13 28 7-35 33-51 49-36 14 14-1 32-17 30-12-2-18 4-23 15 34 3 51 26 37 42-13 15-32 1-31-16 1-11-6-18-17-23 2 33-17 54-35 43-18-10-8-32 7-35 12-3 16-11 16-23-27 21-55 14-56-6-1-19 22-25 34-15 9 8 18 7 28-1Z" fill="#ef5c3f" stroke="#242628" stroke-width="3" stroke-linejoin="round"/>
-                            <path d="M102 78c5 7 2 13-3 16m63-12c-8 3-10 9-9 15m5 49c-7-6-13-5-18-1m-47 1c8-1 12 3 13 9m-45-48c8 2 12-1 15-6" fill="none" stroke="#ffe0a0" stroke-width="4" stroke-linecap="round"/>
-                            <circle cx="120" cy="120" r="13" fill="#d3ef59" stroke="#242628" stroke-width="3"/>
+                            <path d="M120 19C76 30 55 48 64 69c7 18 39 23 54 41 13 16 6 36-22 52-31 18-38 37-14 54 9 7 24 11 38 14-13-16-13-27 4-39 24-17 49-31 50-54 1-22-21-35-43-48-20-12-29-24-11-40 16-14 28-21 0-30Z" fill="url(#twistOne)" stroke="var(--ink)" stroke-width="2.5" stroke-linejoin="round"/>
+                            <path d="M120 19c25 17 38 35 25 54-13 18-43 26-51 46-9 23 14 42 36 57 25 17 32 37 8 54-9 6-20 9-32 12 12-15 12-27-4-39-21-16-45-31-46-53-1-21 21-35 43-49 21-13 28-25 11-40-14-13-24-21 10-42Z" fill="url(#twistTwo)" stroke="var(--ink)" stroke-width="2.5" stroke-linejoin="round" opacity=".94"/>
+                            <path d="M120 23c-16 20-17 37 1 52 21 18 39 30 38 49-1 22-22 33-39 47-18 15-20 28 0 47-33-10-44-27-31-48 12-18 37-28 39-48 2-17-17-28-36-42-21-15-24-34-4-54 8-8 19-16 32-23Z" fill="url(#twistThree)" stroke="var(--ink)" stroke-width="2" stroke-linejoin="round" opacity=".78"/>
+                            <path d="M119 28c-7 28 27 36 31 61 5 26-35 38-34 61 1 22 28 35 22 57" fill="none" stroke="#fff" stroke-width="4" opacity=".68" stroke-linecap="round"/>
+                            <path d="M120 10v220" fill="none" stroke="var(--ink)" stroke-width="3"/>
+                            <path d="M120 10v220" fill="none" stroke="#fff" stroke-width="1" opacity=".6"/>
+                            <circle cx="120" cy="17" r="7" fill="var(--blade-2)" stroke="var(--ink)" stroke-width="2"/>
                         </g>
                         <circle class="wheel-hub" cx="120" cy="120" r="10"/>
                         <circle cx="120" cy="120" r="3.5" fill="#f2eddf"/>
                     </svg>
                 </div>
                 <div class="stage-caption">
-                    <span id="wheelCaption">종이</span>
+                    <span id="wheelCaption">색종이</span>
                     <span id="spinCaption">대기</span>
                 </div>
             </div>
@@ -334,38 +426,55 @@
             <aside class="side-panel">
                 <section class="paper-card" aria-label="바람개비 모양 선택">
                     <div class="wheel-picker">
-                        <button class="wheel-choice" type="button" data-choice="paper" aria-label="종이 바람개비" aria-pressed="true">
+                        <button class="wheel-choice" type="button" data-choice="paper" aria-label="색종이 바람개비" aria-pressed="true">
                             <span class="choice-icon" aria-hidden="true">
                                 <svg viewBox="0 0 60 60">
-                                    <path d="M30 30 9 8q18 4 21 21Z" fill="#3547d4" stroke="#242628" stroke-width="1.5"/>
-                                    <path d="M30 30 52 9q-4 18-21 21Z" fill="#ef5c3f" stroke="#242628" stroke-width="1.5"/>
-                                    <path d="M30 30 51 52q-18-4-21-21Z" fill="#d3ef59" stroke="#242628" stroke-width="1.5"/>
-                                    <path d="M30 30 8 51q4-18 21-21Z" fill="#f3a5bd" stroke="#242628" stroke-width="1.5"/>
+                                    <path d="M30 30C23 21 12 11 8 7c12 2 22 9 23 22Z" fill="var(--blade-1)" stroke="#242628" stroke-width="1.5"/>
+                                    <path d="M30 30C39 23 49 12 53 8c-2 12-9 22-22 23Z" fill="var(--blade-2)" stroke="#242628" stroke-width="1.5"/>
+                                    <path d="M30 30C37 39 48 49 52 53c-12-2-22-9-23-22Z" fill="var(--blade-3)" stroke="#242628" stroke-width="1.5"/>
+                                    <path d="M30 30C21 37 11 48 7 52c2-12 9-22 22-23Z" fill="var(--blade-4)" stroke="#242628" stroke-width="1.5"/>
                                     <circle cx="30" cy="30" r="3" fill="#f2eddf" stroke="#242628" stroke-width="1.5"/>
                                 </svg>
                             </span>
-                            <span class="choice-name">종이</span>
+                            <span class="choice-name">색종이</span>
                         </button>
                         <button class="wheel-choice" type="button" data-choice="propeller" aria-label="프로펠러 바람개비" aria-pressed="false">
                             <span class="choice-icon" aria-hidden="true">
                                 <svg viewBox="0 0 60 60">
-                                    <path d="M28 28C20 15 21 4 29 4c9 0 8 12 4 25Z" fill="#ef5c3f" stroke="#242628" stroke-width="1.5"/>
-                                    <path d="M28 28C20 15 21 4 29 4c9 0 8 12 4 25Z" fill="#3547d4" stroke="#242628" stroke-width="1.5" transform="rotate(120 30 30)"/>
-                                    <path d="M28 28C20 15 21 4 29 4c9 0 8 12 4 25Z" fill="#d3ef59" stroke="#242628" stroke-width="1.5" transform="rotate(240 30 30)"/>
+                                    <path d="M28 28C20 15 21 4 29 4c9 0 8 12 4 25Z" fill="var(--blade-1)" stroke="#242628" stroke-width="1.5"/>
+                                    <path d="M28 28C20 15 21 4 29 4c9 0 8 12 4 25Z" fill="var(--blade-2)" stroke="#242628" stroke-width="1.5" transform="rotate(120 30 30)"/>
+                                    <path d="M28 28C20 15 21 4 29 4c9 0 8 12 4 25Z" fill="var(--blade-3)" stroke="#242628" stroke-width="1.5" transform="rotate(240 30 30)"/>
                                     <circle cx="30" cy="30" r="3.5" fill="#f2eddf" stroke="#242628" stroke-width="1.5"/>
                                 </svg>
                             </span>
                             <span class="choice-name">프로펠러</span>
                         </button>
-                        <button class="wheel-choice" type="button" data-choice="weird" aria-label="기묘한 바람개비" aria-pressed="false">
+                        <button class="wheel-choice" type="button" data-choice="weird" aria-label="세로축 나선 바람개비" aria-pressed="false">
                             <span class="choice-icon" aria-hidden="true">
                                 <svg viewBox="0 0 60 60">
-                                    <path d="M29 30C17 24 16 14 22 12c6-2 8 5 5 8 8-11 18-9 18-3s-8 7-12 5c12 3 15 11 9 14s-10-4-9-8c1 12-7 17-11 12s2-10 6-10c-12 5-18-1-15-6s10-2 11 2Z" fill="#ef5c3f" stroke="#242628" stroke-width="1.5" stroke-linejoin="round"/>
-                                    <circle cx="30" cy="30" r="3.5" fill="#d3ef59" stroke="#242628" stroke-width="1.5"/>
+                                    <path d="M30 3C18 9 16 15 27 21c13 7 15 13 3 20-12 7-13 13 0 16-6-7-4-10 4-15 12-7 10-13-1-20-9-6-10-11-3-19Z" fill="var(--blade-1)" stroke="#242628" stroke-width="1.4"/>
+                                    <path d="M30 3c8 7 10 12 3 19-9 8-10 14 1 21 9 6 8 11-4 14 6-7 4-10-4-15-12-7-10-13 1-20 9-6 10-11 3-19Z" fill="var(--blade-3)" stroke="#242628" stroke-width="1.4"/>
+                                    <path d="M30 5v50" fill="none" stroke="#fff" stroke-width="1" opacity=".8"/>
+                                    <circle cx="30" cy="4" r="2.5" fill="var(--blade-2)" stroke="#242628" stroke-width="1"/>
                                 </svg>
                             </span>
-                            <span class="choice-name">기묘한 모양</span>
+                            <span class="choice-name">세로 나선</span>
                         </button>
+                    </div>
+                    <div class="color-picker" aria-label="바람개비 색상">
+                        <span class="color-title">색상</span>
+                        <label class="color-chip" style="--chip-color:var(--blade-1)">
+                            <input type="color" value="#f2bf18" data-blade-color="1" aria-label="첫 번째 날개 색상">
+                        </label>
+                        <label class="color-chip" style="--chip-color:var(--blade-2)">
+                            <input type="color" value="#f4d532" data-blade-color="2" aria-label="두 번째 날개 색상">
+                        </label>
+                        <label class="color-chip" style="--chip-color:var(--blade-3)">
+                            <input type="color" value="#f7a91b" data-blade-color="3" aria-label="세 번째 날개 색상">
+                        </label>
+                        <label class="color-chip" style="--chip-color:var(--blade-4)">
+                            <input type="color" value="#fff071" data-blade-color="4" aria-label="네 번째 날개 색상">
+                        </label>
                     </div>
                 </section>
 
@@ -399,11 +508,12 @@
         const levelText = document.getElementById("levelText");
         const deadZone = document.getElementById("deadZone");
         const deadZoneText = document.getElementById("deadZoneText");
-        const pinwheel = document.getElementById("pinwheel");
+        const wheelGraphic = document.getElementById("wheelGraphic");
+        const stage = document.querySelector(".stage");
         const spinCaption = document.getElementById("spinCaption");
         const wheelCaption = document.getElementById("wheelCaption");
         const samples = new Uint8Array(1024);
-        const wheelNames = { paper: "종이", propeller: "프로펠러", weird: "기묘한 모양" };
+        const wheelNames = { paper: "색종이", propeller: "프로펠러", weird: "세로 나선" };
 
         let audioContext;
         let analyser;
@@ -414,12 +524,15 @@
         let angle = 0;
         let spinSpeed = 0;
         let windWasDetected = false;
+        let selectedWheel = "paper";
 
         document.querySelectorAll(".wheel-choice").forEach(button => {
             button.addEventListener("click", () => selectWheel(button.dataset.choice));
         });
 
         function selectWheel(wheel) {
+            selectedWheel = wheel;
+            stage.classList.toggle("vertical-axis", wheel === "weird");
             document.querySelectorAll(".wheel-choice").forEach(button => {
                 button.setAttribute("aria-pressed", String(button.dataset.choice === wheel));
             });
@@ -427,6 +540,14 @@
                 design.classList.toggle("is-active", design.dataset.wheel === wheel);
             });
             wheelCaption.textContent = wheelNames[wheel];
+            updateWheelRotation();
+        }
+
+        function updateWheelRotation() {
+            const rotation = selectedWheel === "weird"
+                ? "rotateY(" + angle + "deg)"
+                : "rotateZ(" + angle + "deg)";
+            wheelGraphic.style.transform = rotation;
         }
 
         function setWindStatus(isDetected) {
@@ -445,7 +566,7 @@
             microphone = undefined;
             spinSpeed = 0;
             windWasDetected = false;
-            pinwheel.style.transform = "translate(-50%, -50%) rotate(" + angle + "deg)";
+            updateWheelRotation();
             spinCaption.textContent = "멈춤";
             meterLevel.style.width = "0%";
             levelText.textContent = "0%";
@@ -487,7 +608,7 @@
             }
 
             angle = (angle + spinSpeed * 360 * delta) % 360;
-            pinwheel.style.transform = "translate(-50%, -50%) rotate(" + angle + "deg)";
+            updateWheelRotation();
             spinCaption.textContent = spinSpeed < .1 ? "멈춤" : spinSpeed < 2.5 ? "느림" : spinSpeed < 5 ? "회전" : "빠름";
             animationFrame = requestAnimationFrame(animate);
         }
@@ -533,6 +654,13 @@
 
         deadZone.addEventListener("input", () => {
             deadZoneText.textContent = deadZone.value + "%";
+        });
+
+        document.querySelectorAll("[data-blade-color]").forEach(input => {
+            input.addEventListener("input", () => {
+                document.documentElement.style.setProperty("--blade-" + input.dataset.bladeColor, input.value);
+                input.parentElement.style.setProperty("--chip-color", input.value);
+            });
         });
     </script>
 </body>
