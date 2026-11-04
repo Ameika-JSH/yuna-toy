@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="theme-color" content="#f2eddf">
-    <title>바람을 모아, 빙글</title>
+    <title>바람개비</title>
     <style>
         :root {
             color-scheme: light;
@@ -25,21 +25,21 @@
             min-width: 320px;
             min-height: 100vh;
             margin: 0;
-            padding: 28px 20px 36px;
+            padding: 18px 20px 22px;
             background:
                 radial-gradient(ellipse at 82% 18%, rgba(211, 239, 89, .6) 0 8%, transparent 8.2%),
                 radial-gradient(ellipse at 10% 78%, rgba(239, 92, 63, .12) 0 12%, transparent 12.2%),
                 var(--paper);
         }
 
-        main { width: min(100%, 900px); margin: 0 auto; }
+        main { width: min(100%, 1100px); margin: 0 auto; }
 
         header {
             display: flex;
             justify-content: space-between;
-            align-items: flex-end;
-            gap: 18px;
-            margin-bottom: 20px;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
         }
 
         .eyebrow, .edition, .wheel-number, .micro-label {
@@ -48,50 +48,42 @@
             letter-spacing: .13em;
             text-transform: uppercase;
         }
-        .eyebrow { margin: 0 0 9px; color: var(--red); }
+        .eyebrow { display: none; }
         h1 {
             margin: 0;
             font-family: Georgia, "Times New Roman", serif;
-            font-size: clamp(2.1rem, 7vw, 4.7rem);
+            font-size: clamp(1.7rem, 4vw, 2.7rem);
             font-weight: 500;
             letter-spacing: -.075em;
-            line-height: .96;
-        }
-        .subtitle {
-            max-width: 230px;
-            margin: 0 0 3px;
-            color: #65665f;
-            font-family: Georgia, "Times New Roman", serif;
-            font-size: 1.02rem;
-            font-style: italic;
-            line-height: 1.5;
+            line-height: 1;
         }
 
         .layout {
             display: grid;
-            grid-template-columns: minmax(0, 1.35fr) minmax(250px, .75fr);
-            gap: 16px;
+            grid-template-columns: minmax(0, 1fr) 260px;
+            gap: 14px;
         }
 
         .stage {
             position: relative;
             display: grid;
-            min-height: 390px;
+            height: min(74vh, 680px);
+            min-height: 430px;
             overflow: hidden;
             place-items: center;
             border: 1px solid var(--ink);
-            border-radius: 48% 48% 22px 22px / 36% 36% 22px 22px;
+            border-radius: 46% 46% 26px 26px / 30% 30% 26px 26px;
             background: #e4d8c3;
             isolation: isolate;
         }
         .stage::before {
             position: absolute;
             z-index: -1;
-            top: 10%;
+            top: 7%;
             left: 50%;
-            width: min(76%, 310px);
+            width: min(82%, 500px);
             aspect-ratio: 1;
-            border: 1px solid rgba(36, 38, 40, .25);
+            border: 1px solid rgba(36, 38, 40, .16);
             border-radius: 50%;
             content: "";
             transform: translateX(-50%);
@@ -99,42 +91,23 @@
         .stage::after {
             position: absolute;
             z-index: -1;
-            right: 9%;
-            bottom: 17%;
-            width: 54px;
-            height: 54px;
-            border: 1px solid var(--ink);
-            border-radius: 50%;
-            background: var(--lime);
-            content: "";
-        }
-
-        .sun-mark {
-            position: absolute;
-            top: 10%;
-            left: 10%;
-            color: var(--red);
-            font-family: Georgia, "Times New Roman", serif;
-            font-size: 2rem;
-            transform: rotate(-12deg);
-        }
-        .stage-note {
-            position: absolute;
-            top: 12%;
             right: 8%;
-            color: #66645b;
-            font-size: .7rem;
-            font-weight: 800;
-            letter-spacing: .1em;
-            writing-mode: vertical-rl;
+            bottom: 13%;
+            width: 36px;
+            height: 36px;
+            border: 1px solid rgba(36, 38, 40, .55);
+            border-radius: 50%;
+            background: rgba(211, 239, 89, .78);
+            content: "";
         }
 
         .pinwheel {
             position: absolute;
-            top: 51%;
+            top: 43%;
             left: 50%;
-            width: min(52vw, 260px);
-            min-width: 190px;
+            z-index: 1;
+            width: min(58vw, 430px);
+            min-width: 230px;
             aspect-ratio: 1;
             transform: translate(-50%, -50%);
         }
@@ -149,10 +122,11 @@
 
         .stem {
             position: absolute;
-            top: 51%;
+            top: 43%;
             left: 50%;
+            z-index: 0;
             width: 8px;
-            height: 38%;
+            height: 49%;
             border: 1px solid var(--ink);
             border-radius: 8px;
             background: #f6f0df;
@@ -172,36 +146,45 @@
 
         .stage-caption {
             position: absolute;
-            right: 20px;
-            bottom: 17px;
-            left: 20px;
+            right: 18px;
+            bottom: 14px;
+            left: 18px;
             display: flex;
             justify-content: space-between;
             gap: 8px;
             color: #56564f;
-            font-size: .72rem;
+            font-size: .66rem;
             font-weight: 800;
             letter-spacing: .08em;
             text-transform: uppercase;
         }
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            clip-path: inset(50%);
+        }
 
-        .side-panel { display: flex; flex-direction: column; gap: 12px; }
+        .side-panel { display: flex; flex-direction: column; gap: 10px; }
         .paper-card {
-            padding: 17px;
+            padding: 13px;
             border: 1px solid var(--ink);
             border-radius: 18px;
             background: #fbf8ef;
             box-shadow: 4px 4px 0 var(--ink);
         }
-        .micro-label { display: block; margin-bottom: 12px; color: #696a62; }
-        .wheel-picker { display: grid; grid-template-columns: 1fr; gap: 7px; }
+        .micro-label { display: none; }
+        .wheel-picker { display: grid; grid-template-columns: 1fr; gap: 6px; }
         .wheel-choice {
             display: grid;
-            grid-template-columns: 36px 1fr auto;
+            grid-template-columns: 56px 1fr;
             align-items: center;
-            gap: 10px;
-            min-height: 53px;
-            padding: 7px 10px;
+            gap: 12px;
+            min-height: 76px;
+            padding: 7px 12px;
             border: 1px solid #c8c2b4;
             border-radius: 12px;
             color: var(--ink);
@@ -216,17 +199,18 @@
             background: #e9eaff;
             box-shadow: inset 4px 0 var(--blue);
         }
-        .choice-icon { font-size: 1.45rem; text-align: center; }
-        .choice-name { font-family: Georgia, "Times New Roman", serif; font-size: 1.05rem; }
-        .wheel-number { color: #888579; font-size: .63rem; }
+        .choice-icon { width: 54px; height: 54px; }
+        .choice-icon svg { width: 100%; height: 100%; overflow: visible; }
+        .choice-name { font-family: Georgia, "Times New Roman", serif; font-size: 1rem; }
+        .wheel-number { display: none; }
 
         .sound-card { flex: 1; }
         .status {
-            min-height: 3em;
-            margin: 0 0 12px;
+            min-height: 1.2em;
+            margin: 0 0 8px;
             color: #4e504b;
-            font-size: .87rem;
-            line-height: 1.5;
+            font-size: .8rem;
+            line-height: 1.2;
         }
         .start-button {
             width: 100%;
@@ -249,7 +233,7 @@
             display: flex;
             justify-content: space-between;
             gap: 12px;
-            margin: 16px 0 7px;
+            margin: 11px 0 6px;
             font-size: .78rem;
             font-weight: 800;
         }
@@ -267,109 +251,130 @@
             background: linear-gradient(90deg, var(--lime), #ffbd52, var(--red));
             transition: width .08s linear;
         }
-        .dead-zone-label { margin-top: 17px; }
+        .dead-zone-label { margin-top: 12px; }
         input[type="range"] { width: 100%; accent-color: var(--red); }
-        .dead-zone-help {
-            margin: 5px 0 0;
-            color: #77766d;
-            font-size: .72rem;
-            line-height: 1.45;
-        }
-        .edition {
-            margin: 18px 0 0;
-            color: #7a786f;
-            text-align: right;
-        }
+        .dead-zone-help, .edition { display: none; }
 
         @media (max-width: 680px) {
-            body { padding: 22px 14px 28px; }
-            header { align-items: flex-start; flex-direction: column; gap: 10px; }
-            .subtitle { max-width: 100%; }
+            body { padding: 14px 12px 18px; }
+            header { margin-bottom: 8px; }
             .layout { grid-template-columns: 1fr; }
-            .stage { min-height: 330px; }
-            .pinwheel { width: min(58vw, 230px); }
+            .stage { height: min(56vh, 500px); min-height: 300px; }
+            .pinwheel { top: 42%; width: min(69vw, 330px); min-width: 200px; }
+            .stem { top: 43%; height: 49%; }
             .wheel-picker { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-            .wheel-choice { grid-template-columns: 1fr; justify-items: center; gap: 3px; padding: 9px 5px; }
-            .wheel-number { display: none; }
+            .wheel-choice { grid-template-columns: 1fr; justify-items: center; gap: 2px; min-height: 88px; padding: 7px 4px; }
+            .choice-icon { width: 52px; height: 52px; }
+            .choice-name { font-size: .88rem; }
         }
     </style>
 </head>
 <body>
     <main>
         <header>
-            <div>
-                <p class="eyebrow">Yuna's little wind lab · No. 02</p>
-                <h1>바람을 모아,<br>빙글.</h1>
-            </div>
-            <p class="subtitle">작은 숨으로 시작해<br>얼마나 오래 돌릴 수 있을까요?</p>
+            <h1>바람개비</h1>
         </header>
 
         <section class="layout" aria-label="바람개비 게임">
             <div class="stage" aria-label="바람개비 무대">
-                <span class="sun-mark" aria-hidden="true">✳</span>
-                <span class="stage-note" aria-hidden="true">AIR STUDY / 03</span>
                 <div class="stem" aria-hidden="true"></div>
                 <div class="pinwheel" id="pinwheel">
                     <svg viewBox="0 0 240 240" role="img" aria-label="선택한 바람개비">
-                        <g class="wheel-design is-active" data-wheel="classic">
-                            <path d="M120 111C95 93 66 64 79 42c12-20 38-1 48 62Z" fill="#3547d4"/>
-                            <path d="M129 120c18-25 47-54 69-41 20 12 1 38-62 48Z" fill="#ef5c3f"/>
-                            <path d="M120 129c25 18 54 47 41 69-12 20-38 1-48-62Z" fill="#d3ef59" stroke="#242628" stroke-width="2"/>
-                            <path d="M111 120c-18 25-47 54-69 41-20-12-1-38 62-48Z" fill="#f3a5bd"/>
+                        <g class="wheel-design is-active" data-wheel="paper">
+                            <g>
+                                <path d="M120 120C101 91 61 48 39 35c39 5 74 28 81 63Z" fill="#3547d4" stroke="#242628" stroke-width="2"/>
+                                <path d="M120 120 39 35c35 11 63 33 81 63Z" fill="#6977eb" opacity=".8"/>
+                                <path d="M51 47c25 11 48 31 63 52" fill="none" stroke="#f2eddf" stroke-width="2" opacity=".8"/>
+                            </g>
+                            <g transform="rotate(90 120 120)">
+                                <path d="M120 120C101 91 61 48 39 35c39 5 74 28 81 63Z" fill="#ef5c3f" stroke="#242628" stroke-width="2"/>
+                                <path d="M120 120 39 35c35 11 63 33 81 63Z" fill="#ff9072" opacity=".8"/>
+                                <path d="M51 47c25 11 48 31 63 52" fill="none" stroke="#f2eddf" stroke-width="2" opacity=".8"/>
+                            </g>
+                            <g transform="rotate(180 120 120)">
+                                <path d="M120 120C101 91 61 48 39 35c39 5 74 28 81 63Z" fill="#d3ef59" stroke="#242628" stroke-width="2"/>
+                                <path d="M120 120 39 35c35 11 63 33 81 63Z" fill="#e7ff83" opacity=".8"/>
+                                <path d="M51 47c25 11 48 31 63 52" fill="none" stroke="#f2eddf" stroke-width="2" opacity=".8"/>
+                            </g>
+                            <g transform="rotate(270 120 120)">
+                                <path d="M120 120C101 91 61 48 39 35c39 5 74 28 81 63Z" fill="#f3a5bd" stroke="#242628" stroke-width="2"/>
+                                <path d="M120 120 39 35c35 11 63 33 81 63Z" fill="#ffd0df" opacity=".8"/>
+                                <path d="M51 47c25 11 48 31 63 52" fill="none" stroke="#f2eddf" stroke-width="2" opacity=".8"/>
+                            </g>
+                        </g>
+                        <g class="wheel-design" data-wheel="propeller">
+                            <g>
+                                <path d="M115 113c-13-25-28-76-10-94 13-13 30-3 31 17 2 24-7 58-12 81Z" fill="#ef5c3f" stroke="#242628" stroke-width="3"/>
+                                <path d="M117 102c-8-25-11-45-8-63" fill="none" stroke="#ffd5b8" stroke-width="4" stroke-linecap="round"/>
+                            </g>
+                            <g transform="rotate(120 120 120)">
+                                <path d="M115 113c-13-25-28-76-10-94 13-13 30-3 31 17 2 24-7 58-12 81Z" fill="#3547d4" stroke="#242628" stroke-width="3"/>
+                                <path d="M117 102c-8-25-11-45-8-63" fill="none" stroke="#aab3ff" stroke-width="4" stroke-linecap="round"/>
+                            </g>
+                            <g transform="rotate(240 120 120)">
+                                <path d="M115 113c-13-25-28-76-10-94 13-13 30-3 31 17 2 24-7 58-12 81Z" fill="#d3ef59" stroke="#242628" stroke-width="3"/>
+                                <path d="M117 102c-8-25-11-45-8-63" fill="none" stroke="#f4ffb9" stroke-width="4" stroke-linecap="round"/>
+                            </g>
                         </g>
                         <g class="wheel-design" data-wheel="weird">
-                            <path d="M119 112C86 96 65 64 81 49c16-16 32 12 46 61Z" fill="#ef5c3f"/>
-                            <path d="M128 118c16-33 48-54 63-38 16 16-12 32-61 46Z" fill="#d3ef59"/>
-                            <path d="M121 128c33 16 54 48 38 63-16 16-32-12-46-61Z" fill="#3547d4"/>
-                            <path d="M112 121c-16 33-48 54-63 38-16-16 12-32 61-46Z" fill="#f2b34f"/>
-                            <circle cx="120" cy="120" r="13" fill="#f2eddf" stroke="#242628" stroke-width="3"/>
+                            <path d="M116 115C81 104 73 75 91 64c15-9 27 5 19 18-6 10 1 19 13 28 7-35 33-51 49-36 14 14-1 32-17 30-12-2-18 4-23 15 34 3 51 26 37 42-13 15-32 1-31-16 1-11-6-18-17-23 2 33-17 54-35 43-18-10-8-32 7-35 12-3 16-11 16-23-27 21-55 14-56-6-1-19 22-25 34-15 9 8 18 7 28-1Z" fill="#ef5c3f" stroke="#242628" stroke-width="3" stroke-linejoin="round"/>
+                            <path d="M102 78c5 7 2 13-3 16m63-12c-8 3-10 9-9 15m5 49c-7-6-13-5-18-1m-47 1c8-1 12 3 13 9m-45-48c8 2 12-1 15-6" fill="none" stroke="#ffe0a0" stroke-width="4" stroke-linecap="round"/>
+                            <circle cx="120" cy="120" r="13" fill="#d3ef59" stroke="#242628" stroke-width="3"/>
                         </g>
-                        <g class="wheel-design" data-wheel="pop">
-                            <path d="M120 115c-24-11-46-44-31-59 13-13 28 11 31 59Z" fill="#d3ef59"/>
-                            <path d="M125 120c11-24 44-46 59-31 13 13-11 28-59 31Z" fill="#3547d4"/>
-                            <path d="M120 125c24 11 46 44 31 59-13 13-28-11-31-59Z" fill="#ef5c3f"/>
-                            <path d="M115 120c-11 24-44 46-59 31-13-13 11-28 59-31Z" fill="#f3a5bd"/>
-                            <path d="M120 93v54m-27-27h54" stroke="#242628" stroke-width="2"/>
-                        </g>
-                        <circle class="wheel-hub" cx="120" cy="120" r="9"/>
-                        <circle cx="120" cy="120" r="3" fill="#d3ef59"/>
+                        <circle class="wheel-hub" cx="120" cy="120" r="10"/>
+                        <circle cx="120" cy="120" r="3.5" fill="#f2eddf"/>
                     </svg>
                 </div>
                 <div class="stage-caption">
-                    <span id="wheelCaption">01 / classic</span>
-                    <span id="spinCaption">바람을 기다리는 중</span>
+                    <span id="wheelCaption">종이</span>
+                    <span id="spinCaption">대기</span>
                 </div>
             </div>
 
             <aside class="side-panel">
-                <section class="paper-card" aria-labelledby="wheelLabel">
-                    <span class="micro-label" id="wheelLabel">01 — 오늘의 바람개비</span>
+                <section class="paper-card" aria-label="바람개비 모양 선택">
                     <div class="wheel-picker">
-                        <button class="wheel-choice" type="button" data-choice="classic" aria-pressed="true">
-                            <span class="choice-icon" aria-hidden="true">✳</span>
-                            <span class="choice-name">클래식</span>
-                            <span class="wheel-number">NO. 01</span>
+                        <button class="wheel-choice" type="button" data-choice="paper" aria-label="종이 바람개비" aria-pressed="true">
+                            <span class="choice-icon" aria-hidden="true">
+                                <svg viewBox="0 0 60 60">
+                                    <path d="M30 30 9 8q18 4 21 21Z" fill="#3547d4" stroke="#242628" stroke-width="1.5"/>
+                                    <path d="M30 30 52 9q-4 18-21 21Z" fill="#ef5c3f" stroke="#242628" stroke-width="1.5"/>
+                                    <path d="M30 30 51 52q-18-4-21-21Z" fill="#d3ef59" stroke="#242628" stroke-width="1.5"/>
+                                    <path d="M30 30 8 51q4-18 21-21Z" fill="#f3a5bd" stroke="#242628" stroke-width="1.5"/>
+                                    <circle cx="30" cy="30" r="3" fill="#f2eddf" stroke="#242628" stroke-width="1.5"/>
+                                </svg>
+                            </span>
+                            <span class="choice-name">종이</span>
                         </button>
-                        <button class="wheel-choice" type="button" data-choice="weird" aria-pressed="false">
-                            <span class="choice-icon" aria-hidden="true">✿</span>
-                            <span class="choice-name">위어드</span>
-                            <span class="wheel-number">NO. 02</span>
+                        <button class="wheel-choice" type="button" data-choice="propeller" aria-label="프로펠러 바람개비" aria-pressed="false">
+                            <span class="choice-icon" aria-hidden="true">
+                                <svg viewBox="0 0 60 60">
+                                    <path d="M28 28C20 15 21 4 29 4c9 0 8 12 4 25Z" fill="#ef5c3f" stroke="#242628" stroke-width="1.5"/>
+                                    <path d="M28 28C20 15 21 4 29 4c9 0 8 12 4 25Z" fill="#3547d4" stroke="#242628" stroke-width="1.5" transform="rotate(120 30 30)"/>
+                                    <path d="M28 28C20 15 21 4 29 4c9 0 8 12 4 25Z" fill="#d3ef59" stroke="#242628" stroke-width="1.5" transform="rotate(240 30 30)"/>
+                                    <circle cx="30" cy="30" r="3.5" fill="#f2eddf" stroke="#242628" stroke-width="1.5"/>
+                                </svg>
+                            </span>
+                            <span class="choice-name">프로펠러</span>
                         </button>
-                        <button class="wheel-choice" type="button" data-choice="pop" aria-pressed="false">
-                            <span class="choice-icon" aria-hidden="true">✴</span>
-                            <span class="choice-name">팝</span>
-                            <span class="wheel-number">NO. 03</span>
+                        <button class="wheel-choice" type="button" data-choice="weird" aria-label="기묘한 바람개비" aria-pressed="false">
+                            <span class="choice-icon" aria-hidden="true">
+                                <svg viewBox="0 0 60 60">
+                                    <path d="M29 30C17 24 16 14 22 12c6-2 8 5 5 8 8-11 18-9 18-3s-8 7-12 5c12 3 15 11 9 14s-10-4-9-8c1 12-7 17-11 12s2-10 6-10c-12 5-18-1-15-6s10-2 11 2Z" fill="#ef5c3f" stroke="#242628" stroke-width="1.5" stroke-linejoin="round"/>
+                                    <circle cx="30" cy="30" r="3.5" fill="#d3ef59" stroke="#242628" stroke-width="1.5"/>
+                                </svg>
+                            </span>
+                            <span class="choice-name">기묘한 모양</span>
                         </button>
                     </div>
                 </section>
 
                 <section class="paper-card sound-card" aria-label="마이크 설정">
-                    <span class="micro-label">02 — 숨을 불어넣어요</span>
-                    <p class="status" id="status" role="status" aria-live="polite">시작 버튼을 누르고 마이크를 허용해 주세요.</p>
-                    <button class="start-button" id="toggleButton" type="button">🎙 마이크 시작</button>
+                    <p class="status" id="status" role="status" aria-live="polite">대기</p>
+                    <button class="start-button" id="toggleButton" type="button">🎙 시작</button>
 
                     <div class="meter-heading">
-                        <span>들어오는 바람</span>
+                        <span class="sr-only">마이크 입력</span>
                         <span id="levelText">0%</span>
                     </div>
                     <div class="meter" role="meter" aria-label="마이크 소리 크기" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
@@ -377,16 +382,13 @@
                     </div>
 
                     <label class="dead-zone-label" for="deadZone">
-                        <span>마이크 입력 데드존</span>
+                        <span>데드존</span>
                         <span id="deadZoneText">8%</span>
                     </label>
                     <input id="deadZone" type="range" min="0" max="30" value="8">
-                    <p class="dead-zone-help">설정한 크기보다 작은 소리는 무시해요. 바람이 멎으면 바람개비가 빠르게 느려져요.</p>
                 </section>
             </aside>
         </section>
-
-        <p class="edition">MODERN · CLASSIC · A LITTLE WEIRD</p>
     </main>
 
     <script>
@@ -401,7 +403,7 @@
         const spinCaption = document.getElementById("spinCaption");
         const wheelCaption = document.getElementById("wheelCaption");
         const samples = new Uint8Array(1024);
-        const wheelNames = { classic: "클래식", weird: "위어드", pop: "팝" };
+        const wheelNames = { paper: "종이", propeller: "프로펠러", weird: "기묘한 모양" };
 
         let audioContext;
         let analyser;
@@ -424,16 +426,13 @@
             document.querySelectorAll(".wheel-design").forEach(design => {
                 design.classList.toggle("is-active", design.dataset.wheel === wheel);
             });
-            const number = wheel === "classic" ? "01" : wheel === "weird" ? "02" : "03";
-            wheelCaption.textContent = number + " / " + wheelNames[wheel].toLowerCase();
+            wheelCaption.textContent = wheelNames[wheel];
         }
 
         function setWindStatus(isDetected) {
             if (isDetected === windWasDetected) return;
             windWasDetected = isDetected;
-            statusText.textContent = isDetected
-                ? "바람 감지! 계속 소리를 내면 더 빨리 돌아가요."
-                : "바람이 멎었어요. 잠깐이면 바람개비도 멈춰요.";
+            statusText.textContent = isDetected ? "바람!" : "대기";
         }
 
         function stopMicrophone() {
@@ -447,7 +446,7 @@
             spinSpeed = 0;
             windWasDetected = false;
             pinwheel.style.transform = "translate(-50%, -50%) rotate(" + angle + "deg)";
-            spinCaption.textContent = "바람을 기다리는 중";
+            spinCaption.textContent = "멈춤";
             meterLevel.style.width = "0%";
             levelText.textContent = "0%";
             meter.setAttribute("aria-valuenow", "0");
@@ -489,9 +488,7 @@
 
             angle = (angle + spinSpeed * 360 * delta) % 360;
             pinwheel.style.transform = "translate(-50%, -50%) rotate(" + angle + "deg)";
-            spinCaption.textContent = spinSpeed < .1
-                ? "바람을 기다리는 중"
-                : spinSpeed < 2.5 ? "천천히, 빙글" : spinSpeed < 5 ? "시원하게 돌아요" : "바람을 타고!";
+            spinCaption.textContent = spinSpeed < .1 ? "멈춤" : spinSpeed < 2.5 ? "느림" : spinSpeed < 5 ? "회전" : "빠름";
             animationFrame = requestAnimationFrame(animate);
         }
 
@@ -508,27 +505,27 @@
             microphone.connect(analyser);
             lastFrame = 0;
             windWasDetected = false;
-            statusText.textContent = "좋아요! 소리를 내서 바람개비를 돌려 보세요.";
-            toggleButton.textContent = "⏹ 멈추기";
+            statusText.textContent = "준비";
+            toggleButton.textContent = "⏹ 중지";
             animationFrame = requestAnimationFrame(animate);
         }
 
         toggleButton.addEventListener("click", async () => {
             if (stream) {
                 stopMicrophone();
-                statusText.textContent = "마이크를 멈췄어요. 다시 시작할 수 있어요.";
+                statusText.textContent = "대기";
                 return;
             }
 
             toggleButton.disabled = true;
-            statusText.textContent = "마이크 연결을 기다리는 중...";
+            statusText.textContent = "연결 중";
             try {
                 await startMicrophone();
             } catch (error) {
                 stopMicrophone();
                 statusText.textContent = error.name === "NotAllowedError"
-                    ? "마이크 권한이 거부됐어요. 브라우저 설정에서 마이크를 허용해 주세요."
-                    : error.message || "마이크를 시작하지 못했어요. 연결과 권한을 확인해 주세요.";
+                    ? "마이크 권한 필요"
+                    : error.message || "연결 실패";
             } finally {
                 toggleButton.disabled = false;
             }
